@@ -89,7 +89,15 @@ def chisq(data, model, ivar):
     return np.sum((data - model) * ivar * (data - model))
 
 def estimate_rv(data, ivar, args, template=make_mask, method=xcorr):
-    return None
+    """
+    Not yet written.
+    """
+    rvs = np.arange(-300., 301., 25.)
+    objs = np.zeros_like(rvs)
+    for i, rv in enumerate(rvs):
+        model = template(rv, *args)
+        objs[i] = method(data, model, ivar
+    return rvs, objs
 
 if __name__ == "__main__":
     import pylab as plt
