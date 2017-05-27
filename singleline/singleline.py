@@ -97,7 +97,7 @@ def get_objective_on_grid(data, ivar, template, args, method):
     `method`: objective-function generator; currently `xcorr` or `chisq`
     """
     drv = 25.
-    rvs = np.arange(-300. + 0.5 * drv, 300., drv)
+    rvs = np.arange(-600. + 0.5 * drv, 600., drv)
     objs = np.zeros_like(rvs)
     for i, rv in enumerate(rvs):
         model = template(rv, *args)
@@ -112,8 +112,10 @@ def quadratic_max(xs, ys):
     delta = xs[1] - xs[0]
     assert np.allclose(xs[1:] - xs[:-1], delta), "quadratic_max: not uniform grid!"
     ii = np.argmax(ys)
-    assert ii > 0, ("quadratic_max", ii, ys)
-    assert (ii + 1) < len(ys), ("quadratic_max", ii, ys)
+    if ii == 0:
+        return xs[ii]
+    if (ii + 1) == len(ys):
+        return xs[ii]
     return xs[ii] + 0.5 * delta * (ys[ii-1] - ys[ii+1]) / (ys[ii-1] - 2. * ys[ii] + ys[ii+1])
 
 if __name__ == "__main__":
