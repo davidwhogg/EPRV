@@ -14,7 +14,7 @@ def doppler(rv):
 def oned_gaussian(xs, mm, sig):
     return np.exp(-0.5 * (xs - mm) ** 2 / sig ** 2) / np.sqrt(2. * np.pi * sig)
 
-def make_synthetic_spectrum(rv, xs, mm, sig):
+def make_synth(rv, xs, mm, sig):
     """
     `rv`: radial velocity in m/s (or same units as `c` above
     `xs`: `[M]` array of wavelength values
@@ -44,12 +44,12 @@ def make_mask(rv, xs, mm, w1, w2):
     model[xmms > -ddd] = 1.
     model[xmms > ddd] = (dd - xmms[xmms > ddd]) / (dd - ddd)
     model[xmms > dd] = 0.
-    return model
+    return 1. - model
 
-def dsynthetic_dv(rv, xs, mm, sig):
+def dsynth_dv(rv, xs, mm, sig):
     dv = 10. # m/s
-    f2 = make_synthetic_spectrum(rv + dv, xs, mm, sig)
-    f1 = make_synthetic_spectrum(rv - dv, xs, mm, sig)
+    f2 = make_synth(rv + dv, xs, mm, sig)
+    f1 = make_synth(rv - dv, xs, mm, sig)
     return (f2 - f1) / (2. * dv)
 
 def make_data(N, xs, mm, sig):
@@ -64,7 +64,7 @@ def make_data(N, xs, mm, sig):
     ivar = np.zeros((N, M))
     for n in range(N):
         ivar[n, :] = 10000.
-        data[n, :] = make_synthetic_spectrum(0., xs, mm, sig)
+        data[n, :] = make_synth(0., xs, mm, sig)
         data[n, :] += np.random.normal(size=M) / np.sqrt(ivar[n, :])
     return data, ivar
 
@@ -86,22 +86,39 @@ def chisq(data, model, ivar):
     `ivar`: `[M]` array of inverse variance values
     (presumes `ivar` is a list of diagonal entries)
     """
-    return np.sum((data - model) * ivar * (data - model))
+    return -0.5 * np.sum((data - model) * ivar * (data - model))
 
-def estimate_rv(data, ivar, args, template=make_mask, method=xcorr):
+def get_objective_on_grid(data, ivar, template, args, method):
     """
-    Not yet written.
+    `data`: `[M]` array of pixel values
+    `ivar`: matched array of inverse variance values
+    `args`: list of inputs to go into `template` function after `rv`
+    `template`: function that makes the spectral template or mask
+    `method`: objective-function generator; currently `xcorr` or `chisq`
     """
-    rvs = np.arange(-300., 301., 25.)
+    drv = 25.
+    rvs = np.arange(-300. + 0.5 * drv, 300., drv)
     objs = np.zeros_like(rvs)
     for i, rv in enumerate(rvs):
         model = template(rv, *args)
-        objs[i] = method(data, model, ivar
+        objs[i] = method(data, model, ivar)
     return rvs, objs
+
+def quadratic_max(xs, ys):
+    """
+    Find the maximum from a list, using a quadratic interpolation.
+    REQUIRES that the xs grid is uniform.
+    """
+    delta = xs[1] - xs[0]
+    assert np.allclose(xs[1:] - xs[:-1], delta), "quadratic_max: not uniform grid!"
+    ii = np.argmax(ys)
+    assert ii > 0, ("quadratic_max", ii, ys)
+    assert (ii + 1) < len(ys), ("quadratic_max", ii, ys)
+    return xs[ii] + 0.5 * delta * (ys[ii-1] - ys[ii+1]) / (ys[ii-1] - 2. * ys[ii] + ys[ii+1])
 
 if __name__ == "__main__":
     import pylab as plt
-
+                         
     # set parameters
     np.random.seed(42)
     mm = 5000.0 # A
@@ -120,12 +137,12 @@ if __name__ == "__main__":
 
     # make and plot model
     rv = 0.
-    dmodel_dv = dsynthetic_dv(rv, xs, mm, sig)
+    dmodel_dv = dsynth_dv(rv, xs, mm, sig)
     plt.clf()
     drv = 1000. # m/s
     rvs = np.arange(-5000. + 0.5 * drv, 5000., drv)
     for rv in rvs:
-        model = make_synthetic_spectrum(rv, xs, mm, sig)
+        model = make_synth(rv, xs, mm, sig)
         plt.plot(xs, model, "k-")
     plt.plot(xs, 4096. * dmodel_dv, "r-")
     plt.title("models and velocity derivative (times 4096)")
@@ -133,13 +150,42 @@ if __name__ == "__main__":
 
     # compute CRLBs
     rv = 0.
-    dmodel_dv = dsynthetic_dv(rv, xs, mm, sig)
+    dmodel_dv = dsynth_dv(rv, xs, mm, sig)
     crlbs = np.zeros(N)
     for n in range(N):
-        crlbs[n] = 1. / np.sqrt(np.sum(dmodel_dv * ivar[n, :] * dmodel_dv))
-    print("CRLB:", np.mean(crlbs), "m/s")
+        crlbs[n] = np.sum(dmodel_dv * ivar[n, :] * dmodel_dv)
+    crlb = 1. / np.sqrt(np.mean(crlbs))
+    print("CRLB:", crlb, "m/s")
 
-    # make and plot 
+    # get best-fit velocities
+    width = 0.075
+    options = ([make_synth, (xs, mm, sig), xcorr],
+               [make_synth, (xs, mm, sig), chisq],
+               [make_mask, (xs, mm, 0.5 * dx, width), xcorr],
+               [make_mask, (xs, mm, 0.5 * dx, width), chisq])
+    best_rvs = np.zeros((N, len(options)))
+    for n in range(N):
+        if n == 0:
+            plt.clf()
+        for j, (template, args, method) in enumerate(options):
+            rvs, objs = get_objective_on_grid(data[n], ivar[n], template, args, method)
+            best_rvs[n,j] = quadratic_max(rvs, objs)
+            if n == 0:
+                plt.plot(rvs, objs, marker=".", alpha=0.5)
+                plt.axvline(best_rvs[n, j], alpha=0.5)
+        if n == 0:
+            plt.title("grids of objective values")
+            plt.savefig("objective.png")
+
+    # plot best_rvs
+    for j in range(len(options)):
+        plt.clf()
+        n, bins, patches = plt.hist(best_rvs[:, j], 50, normed=1, color="k", alpha=0.75)
+        plt.plot(bins, oned_gaussian(bins, 0., crlb) / (bins[2] - bins[1]), "r-")
+        plt.title("measured RVs")
+        plt.savefig("best_rvs_{:02d}.png".format(j))
+
+    # make and plot mask
     plt.clf()
     for rv in rvs:
         mask = make_mask(rv, xs, mm, 0.075, 0.5 * dx)
