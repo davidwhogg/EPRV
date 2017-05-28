@@ -146,7 +146,7 @@ if __name__ == "__main__":
     xs = np.arange(4998. + 0.5 * dx, 5002., dx) # A
 
     # make and plot fake data
-    N = 16
+    N = 256
     data, ivars, true_rvs = make_data(N, xs, mm, sig)
     plt.clf()
     for n in range(8):
@@ -195,19 +195,23 @@ if __name__ == "__main__":
             plt.savefig("objective.png")
 
     # plot best_rvs
-    for j in range(len(options)):
+    for j, options in enumerate(options):
+        titlestr = "{}: {} / {}".format(j, options[0].__name__, options[2].__name__)
         plt.clf()
-        plt.plot(true_rvs, best_rvs[:, j], "k.")
-        plt.title("method {}".format(j))
+        plt.plot(true_rvs, best_rvs[:, j], "k.", alpha=0.5)
+        plt.title(titlestr)
         plt.xlabel("true RVs")
         plt.ylabel("measured RVs")
         plt.savefig("rv_measurements_{:02d}.png".format(j))
 
         plt.clf()
-        plt.plot(true_rvs, best_rvs[:, j] - true_rvs, "k.")
-        plt.title("method {}".format(j))
+        plt.plot(true_rvs, best_rvs[:, j] - true_rvs, "k.", alpha=0.5)
+        plt.axhline(2. * crlb, color="k", lw=0.5, alpha=0.5)
+        plt.axhline(-2. * crlb, color="k", lw=0.5, alpha=0.5)
+        plt.title(titlestr)
         plt.xlabel("true RVs")
         plt.ylabel("RV mistake")
+        plt.ylim(-4500., 4500.)
         plt.savefig("rv_mistakes_{:02d}.png".format(j))
 
     # make and plot mask
