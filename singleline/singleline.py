@@ -175,7 +175,7 @@ if __name__ == "__main__":
     print("CRLB:", crlb, "m/s")
 
     # get best-fit velocities
-    width = 0.075 # A
+    width = 0.075 # A; width of binary mask
     options = ([make_synth, (xs, mm, sig), xcorr],
                [make_synth, (xs, mm, sig), chisq],
                [make_mask, (xs, mm, 0.5 * dx, width), xcorr],
@@ -196,7 +196,9 @@ if __name__ == "__main__":
 
     # plot best_rvs
     for j, options in enumerate(options):
-        titlestr = "{}: {} / {}".format(j, options[0].__name__, options[2].__name__)
+        rms = np.sqrt(np.mean((best_rvs[:,j] - true_rvs) ** 2)) # m/s
+        titlestr = "{}: {} / {}: {:.2f} m/s".format(j, options[0].__name__, options[2].__name__, rms)
+
         plt.clf()
         plt.plot(true_rvs, best_rvs[:, j], "k.", alpha=0.5)
         plt.title(titlestr)
