@@ -3,8 +3,13 @@ This code is part of the EPRV project.
 Copyright 2017 David W Hogg (NYU).
 
 ## To-do:
+- Make EW of line an input variable in make_synth and propagate.
 - Optimize width of binary mask window.
-- Look at errors as a function of synthetic-spectrum wrongness.
+-- Do this with a function that is general-purpose
+- Look at errors as a function of synthetic-spectrum wrongness
+-- in amplitude
+-- in width
+-- in line shape
 - Make a model with 2 lines or 4 to test scalings.
 """
 
