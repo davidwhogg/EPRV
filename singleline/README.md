@@ -42,6 +42,13 @@ Finding the best possible binary mask.
 
 How much better do you do with an accurate line shape than with a binary mask?
 
+### Noise model
+How much does it matter to be right about the noise variances?
+
+What about outliers; how much do they hurt different methods? Are binary masks more robust to these?
+
+Some comments about correlated noise and continuum issues and calibration issues.
+
 ## Scaling to full spectrum
 
 ### Analytic expectations
