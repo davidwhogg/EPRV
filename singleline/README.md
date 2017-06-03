@@ -11,14 +11,47 @@
 ## Introduction
 Importance of EPRV; locations where information may be being lost in the data-analysis pipelines themselves. That is, the unconscionable losses. Introduce the concept of the CRLB and the Fisher information. Emphasize the great importance of having open data archives. Make it clear that what's being discussed here only applies (trivially) to HARPS-like data; the gas cell brings in new considerations.
 
-## Cross-correlation and maximum likelihood
-How a matched filter is the same as maximum likelihood *under conditions*. How to do a cross-correlation to make sure these conditions are met. How to get an uncertainty out of a cross-correlation, and not just a best fit.
+## Methods and tools
+
+### Information theory
+Compute the CRLB for velocity.
+
+### Maximum-likelihood
+Explain the likelihood and how to maximize it. And predict that it will saturate the CRLB when the noise model and the mean model are both accurate. How to get an uncertainty out of a ML fit?
+
+### Cross-correlation
+How a matched filter is the same as maximum likelihood *under conditions*. How to do a cross-correlation in practice. How to get an uncertainty out of a cross-correlation fit?
+
+### Artificial data
+Explain how we are making the fake data for this study. Reminder of Doppler. Noise model. Etc.
+
+Philosophical comments on the pixel-convolved line-spread function. 
 
 ## Experiments with a single line
-How much better you do with an accurate line shape than with a binary mask. Details of how you do this. Philosophical comments on the pixel-convolved line-spread function. How cross-correlation results degrade with line shape and line depth. On the latter, the issues of uncertainty estimation matter (because depth scales out).
+
+### The ML saturates the CRLB
+Demo!
+
+### How much does line depth, position, and width matter?
+How cross-correlation results degrade with line shape and line depth. On the latter, for cross-correlation methods, the issues of uncertainty estimation matter (because depth scales out).
+
+### Binary masks
+Comments about the fact that people claim to use binary masks.
+
+Finding the best possible binary mask.
+
+How much better do you do with an accurate line shape than with a binary mask?
 
 ## Scaling to full spectrum
+
+### Analytic expectations
 Introduction to information theory as it applies to this project; connect to Fisher information. Discussion of the implications for the full stellar spectrum. Information loss from using binary masks, even in the best possible scenario. Importance of generating a good synthetic spectrum. Prospects for *Avast*.
 
+### Experiments
+Make fake data with K lines with different depths. Fit with a synthetic spectrum or template with various wrongnesses on depths, line width, and line positions. Use a variance on these.
+
 ## Discussion
-What this might mean for present-day projects. Things that might limit the applicability of these results to real data sets. Address the apparent conflict with other experiments that have looked at these things.
+What this might all this mean for present-day projects? Things that might limit the applicability of these results to real data sets. Address the apparent conflict with other experiments that have looked at these things.
+
+## Acknowledgements
+people, grants, and projects
