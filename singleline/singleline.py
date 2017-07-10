@@ -10,6 +10,7 @@ Copyright 2017 David W Hogg (NYU).
 -- in amplitude
 -- in width
 -- in line shape
+- Consider continuum noise or wrongness
 - Make a model with 2 lines or 4 to test scalings.
 """
 
@@ -201,7 +202,7 @@ if __name__ == "__main__":
 
     # plot best_rvs
     for j, options in enumerate(options):
-        rms = np.sqrt(np.mean((best_rvs[:,j] - true_rvs) ** 2)) # m/s
+        rms = np.sqrt(np.var(best_rvs[:,j] - true_rvs, ddof=1)) # m/s
         titlestr = "{}: {} / {}: {:.2f} m/s".format(j, options[0].__name__, options[2].__name__, rms)
 
         plt.clf()
