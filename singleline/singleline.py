@@ -152,25 +152,13 @@ if __name__ == "__main__":
     xs = np.arange(4998. + 0.5 * dx, 5002., dx) # A
 
     # make and plot fake data
-    N = 256
+    N = 512
     data, ivars, true_rvs = make_data(N, xs, mm, sig)
     plt.clf()
     for n in range(8):
         plt.step(xs, data[n, :] + 0.25 * n, color="k")
     plt.title("examples of (fake) data")
     plt.savefig("data.png")
-
-    # make and plot model
-    dmodel_dv = dsynth_dv(0., xs, mm, sig)
-    plt.clf()
-    drv = 1000. # m/s; just for plotting purposes
-    rvs = np.arange(-5000. + 0.5 * drv, 5000., drv) # m/s; just for plotting purposes
-    for rv in rvs:
-        model = make_synth(rv, xs, mm, sig)
-        plt.plot(xs, model, "k-")
-    plt.plot(xs, 4096. * dmodel_dv, "r-")
-    plt.title("models and velocity derivative (times 4096)")
-    plt.savefig("synth.png")
 
     # compute CRLBs
     dmodel_dv = dsynth_dv(0., xs, mm, sig)
@@ -181,17 +169,17 @@ if __name__ == "__main__":
     print("CRLB:", crlb, "m/s")
 
     # get best-fit velocities
-    width = 0.075 # A; width of binary mask
+    halfwidth = 0.075 # A; half-width of binary mask
     options = ([make_synth, (xs, mm, sig), xcorr],
                [make_synth, (xs, mm, sig), chisq],
-               [make_mask, (xs, mm, 0.5 * dx, width), xcorr],
-               [make_mask, (xs, mm, 0.5 * dx, width), chisq])
+               [make_mask, (xs, mm, 0.5 * dx, halfwidth), xcorr],
+               [make_mask, (xs, mm, 0.5 * dx, halfwidth), chisq])
     best_rvs = np.zeros((N, len(options)))
     for n in range(N):
         if n == 0:
             plt.clf()
         for j, (template, args, method) in enumerate(options):
-            rvs, objs = get_objective_on_grid(data[n], ivars[n], template, args, method, true_rvs[n], 6000.)
+            rvs, objs = get_objective_on_grid(data[n], ivars[n], template, args, method, true_rvs[n], 1024.)
             best_rvs[n,j] = quadratic_max(rvs, objs)
             if n == 0:
                 plt.plot(rvs, objs, marker=".", alpha=0.5)
@@ -223,9 +211,43 @@ if __name__ == "__main__":
         plt.savefig("rv_mistakes_{:02d}.png".format(j))
 
     # make and plot mask
+    rvs -= np.min(rvs)
     plt.clf()
-    for rv in rvs:
+    for rv in rvs[::4]:
         mask = make_mask(rv, xs, mm, 0.075, 0.5 * dx)
         plt.step(xs, mask + 0.0011 * rv, "k-")
     plt.title("pixel-convolved binary masks")
     plt.savefig("mask.png")
+
+    # make and plot synth model
+    plt.clf()
+    for rv in rvs[::4]:
+        model = make_synth(rv, xs, mm, sig)
+        plt.plot(xs, model + 0.0011 * rv, "k-")
+    plt.plot(xs, 4096. * dmodel_dv, "r-")
+    plt.title("models and velocity derivative (times 4096)")
+    plt.savefig("synth.png")
+
+    # get best-fit velocities
+    halfwidth = 0.075 # A; half-width of binary mask
+    method = xcorr
+    template = make_mask
+    tiny = 1. / 128.
+    halfwidths = np.arange(1./64. + 0.5 * tiny, 1./8., tiny)
+    best_rvs_hw = np.zeros((N, len(halfwidths)))
+    for j,halfwidth in enumerate(halfwidths):
+        print(j)
+        for n in range(N):
+            args = (xs, mm, 0.5 * dx, halfwidth)
+            rvs, objs = get_objective_on_grid(data[n], ivars[n], template, args, method, true_rvs[n], 1024.)
+            best_rvs_hw[n,j] = quadratic_max(rvs, objs)
+
+    # plot best_rvs
+    plt.clf()
+    plt.plot(halfwidths, np.sqrt(np.var(best_rvs_hw - true_rvs[:, None], axis=0, ddof=1)), "k.", alpha=0.5)
+    plt.axhline(crlb, color="k", lw=0.5, alpha=0.5)
+    plt.title("dependence on binary mask half-width")
+    plt.xlabel("binary mask half-width")
+    plt.ylabel("RV std")
+    plt.ylim(0., 500.)
+    plt.savefig("rv_std_hw.png".format(j))
