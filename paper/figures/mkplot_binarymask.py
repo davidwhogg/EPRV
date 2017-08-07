@@ -20,14 +20,15 @@ if __name__ == "__main__":
     mask = (wi > 4995.) & (wf < 5005.)
     for wwi,wwf,wweight in zip(wi[mask], wf[mask], weight[mask]):
         ws = np.arange(wwi,wwf,0.001)
-        fs1 = np.zeros_like(ws)
-        fs2 = np.zeros_like(ws) + np.sqrt(wweight)
-        #fs1 = np.ones_like(ws) - np.sqrt(wweight)
-        #fs2 = np.ones_like(ws)
-        ax.fill_between(ws, fs1, fs2, facecolor=c2, alpha=0.5)
+        #fs1 = np.zeros_like(ws)
+        #fs2 = np.zeros_like(ws) + np.sqrt(wweight)
+        fs1 = np.ones_like(ws) - np.sqrt(wweight)
+        fs2 = np.ones_like(ws)
+        ax.fill_between(ws, fs1, fs2, facecolor=c2, alpha=0.6)
     
     # tweak & save    
     ax.set_xlabel(r'Wavelength $(\AA)$')
     ax.set_ylabel('Normalized Flux')
-    ax.set_xlim([4995., 5005.])   
+    ax.set_xlim([5000., 5005.])
+    ax.set_ylim([0.05, 1.03])   
     fig.savefig('binarymask.pdf')

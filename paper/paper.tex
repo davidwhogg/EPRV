@@ -1,8 +1,14 @@
-\documentclass[twocolumn]{aastex61}
+\documentclass[modern]{aastex61}
 \usepackage{graphicx}
-
+\usepackage{xcolor}
 \usepackage[sort&compress]{natbib}
 \usepackage[hang,flushmargin]{footmisc}
+
+\newcommand{\kms}{km s$^{-1}$}
+\newcommand{\ms}{m s$^{-1}$}
+\newcommand\todo[1]{\textcolor{red}{#1}}  % gotta have \usepackage{xcolor} in main doc or this won't work
+
+
 
 \begin{document}
 \graphicspath{ {figures/} }
@@ -22,7 +28,9 @@
 
 \section{Introduction}
 
-summary of the ways people derive precise RVs from spectra; citations to binary mask papers, papers that compare template matching to binary masks
+Accurate spectroscopic measurements of radial velocities (RVs) have long been a critical tool across many subfields of astronomy, from galactic dynamics to cosmic expansion. In recent decades, however, a new focus has emerged on \textit{extremely precise} RV measurements of stars as a means of detecting exoplanets. For this application, measuring the absolute velocity of the star is much less important than resolving its changes through time. With sub-\ms-level precision required for the detection of Earth-like planets, vast amounts of effort have been poured into the engineering challenges of constructing a sufficiently stable spectrograph (or, failing that, being able to track the drift of a spectrograph over time) \todo{(cite some review papers)}. At the same time, great strides have been made towards disentangling true Doppler shifts from imitative signals like stellar pulsations and magnetic activity features \todo{(cite some review papers)}.  In this work, we investigate another fundamentally important but less commonly discussed aspect of the quest for maximum-precision RVs: the method of analysis used to extract the RV from a stellar spectrum.
+
+[summary of the ways people derive precise RVs from spectra; citations to binary mask papers, papers that compare template matching to binary masks]
 
 \section{Overview of Methods}
 
@@ -36,6 +44,14 @@ for either of these, you could use:
 \end{itemize}
 
 information theory based discussion of these: compute the CRLB for velocity
+
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{binarymask}
+\caption{Illustration of a quasi-binary mask (blue windows) plotted over a small segment of the solar spectrum (black). The vertical length of each mask window scales to the square root of the weight given to the line when performing a cross-correlation between mask and spectrum.}
+\label{fig:binarymask}
+\end{figure}
+
 
 \section{Generating Test Spectra}
 
