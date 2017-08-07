@@ -1,0 +1,66 @@
+\documentclass[twocolumn]{aastex61}
+\usepackage{graphicx}
+
+\usepackage[sort&compress]{natbib}
+\usepackage[hang,flushmargin]{footmisc}
+
+\begin{document}
+\graphicspath{ {figures/} }
+\DeclareGraphicsExtensions{.pdf,.eps,.png}
+
+\title{How to Extract Maximum-Precision Radial Velocities from High-Resolution Spectra}
+
+\author{David W. Hogg}
+\affiliation{a lot of places}
+
+\author{Megan Bedell}
+\affiliation{Flatiron Institute?}
+
+\begin{abstract}
+
+\end{abstract}
+
+\section{Introduction}
+
+summary of the ways people derive precise RVs from spectra; citations to binary mask papers, papers that compare template matching to binary masks
+
+\section{Overview of Methods}
+
+cross-correlation vs. max likelihood
+
+for either of these, you could use:
+\begin{itemize}
+\item ``binary'' mask
+\item synthetic spectrum
+\item data-driven synthetic spectrum
+\end{itemize}
+
+information theory based discussion of these: compute the CRLB for velocity
+
+\section{Generating Test Spectra}
+
+how the model works in general, Doppler shifting, parameterization of white noise. number of lines.
+
+additional noise considerations:
+\begin{itemize}
+\item (micro-) telluric features
+\item subtle continuum trends
+\item cosmic rays?
+\end{itemize}
+
+another important consideration is how well the mask/template fits the data. summarize masks and templates tried (do they know the correct relative line depths and locations?).
+
+\section{Single-Line Results}
+
+\section{Multi-Line Results}
+
+\section{Discussion}
+
+\section{Conclusions}
+
+\acknowledgements
+
+\bibliographystyle{apj}
+\bibliography{}%general,myref,inprep}
+
+\end{document}
