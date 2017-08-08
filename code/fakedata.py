@@ -15,6 +15,7 @@ Copyright 2017 David W Hogg (NYU).
 """
 
 import numpy as np
+from scipy.interpolate import interp1d
 
 c = 299792458. # m/s
 
@@ -25,17 +26,17 @@ def doppler(rv):
 def oned_gaussian(xs, mm, sig):
     return np.exp(-0.5 * (xs - mm) ** 2 / sig ** 2) / np.sqrt(2. * np.pi * sig)
 
-def make_synth(rv, xs, ds, ms, sig):
+def make_synth(rv, xs, ds, ms, sigs):
     """
     `rv`: radial velocity in m/s (or same units as `c` above
     `xs`: `[M]` array of wavelength values
-    `ds`: depth-like (really EW) parameters for lines
+    `ds`: depths at line centers
     `ms`: locations of the line centers in rest wavelength
-    `sig`: sigma of pixel-convolved LSF
+    `sigs`: Gaussian sigmas of lines
     """
     synths = np.ones_like(xs)
-    for d, m in zip(ds, ms):
-        synths *= np.exp(-d *
+    for d, m, sig in zip(ds, ms, sigs):
+        synths *= np.exp(d *
             oned_gaussian(xs * doppler(rv), m, sig))
     return synths
 
@@ -68,20 +69,51 @@ def make_mask(rv, xs, ws, ms, w1, w2):
         dmodel[xmms > dd] = 0.
         model += ww * dmodel
     return 1. - model
+    
+def make_template(all_data, rvs, xs, dx, plot=False, plotname='template.png'):
+    """
+    `all_data`: `[N, M]` array of pixels
+    `rvs`: `[N]` array of RVs
+    `xs`: `[M]` array of wavelength values
+    `dx`: linear spacing desired for template wavelength grid (A)
+    """
+    (N,M) = np.shape(all_data)
+    all_xs = np.empty_like(all_data)
+    for i in range(N):
+        all_xs[i,:] = xs * doppler(rvs[i]) # shift to rest frame
+    all_data, all_xs = np.ravel(all_data), np.ravel(all_xs)
+    template_xs = np.arange(min(all_xs), max(all_xs), dx)
+    template_ys = np.empty_like(template_xs)
+    for i,t in enumerate(template_xs):
+        ind = (all_xs >= t-dx/2.) & (all_xs <= t+dx/2.)
+        template_ys[i] = np.median(all_data[ind])
+    if plot == True:
+        plt.clf()
+        plt.scatter(all_xs, all_data)
+        plt.plot(template_xs, template_ys, color='black', lw=2)
+        plt.title('Fitting a template to all data')
+        plt.savefig(plotname)
+    return template_xs, template_ys
+    
+def shift_template(rv, xs, template_xs, template_ys):
+    f = interp1d(template_xs / doppler(rv), template_ys, bounds_error = False, 
+            fill_value = np.nan)
+    return f(xs)
+    
 
-def dsynth_dv(rv, xs, ds, ms, sig):
+def dsynth_dv(rv, xs, ds, ms, sigs):
     dv = 10. # m/s
-    f2 = make_synth(rv + dv, xs, ds, ms, sig)
-    f1 = make_synth(rv - dv, xs, ds, ms, sig)
+    f2 = make_synth(rv + dv, xs, ds, ms, sigs)
+    f1 = make_synth(rv - dv, xs, ds, ms, sigs)
     return (f2 - f1) / (2. * dv)
 
-def make_data(N, xs, ds, ms, sig):
+def make_data(N, xs, ds, ms, sigs):
     """
     `N`: number of spectra to make
     `xs`: `[M]` array of wavelength values
     `ds`: depth-like parameters for lines
     `ms`: locations of the line centers in rest wavelength
-    `sig`: sigma of pixel-convolved LSF
+    `sigs`: Gaussian sigmas of lines
     """
     M = len(xs)
     data = np.zeros((N, M))
@@ -89,7 +121,7 @@ def make_data(N, xs, ds, ms, sig):
     rvs = 30000. * np.random.uniform(-1., 1., size=N) # 30 km/s bc Earth ; MAGIC
     for n, rv in enumerate(rvs):
         ivars[n, :] = 10000. # s/n = 100 ; MAGIC
-        data[n, :] = make_synth(rv, xs, ds, ms, sig)
+        data[n, :] = make_synth(rv, xs, ds, ms, sigs)
         data[n, :] += np.random.normal(size=M) / np.sqrt(ivars[n, :])
     return data, ivars, rvs
 
@@ -142,7 +174,7 @@ def quadratic_max(xs, ys):
     """
     delta = xs[1] - xs[0]
     assert np.allclose(xs[1:] - xs[:-1], delta), "quadratic_max: not uniform grid!"
-    ii = np.argmax(ys)
+    ii = np.nanargmax(ys)
     if ii == 0:
         print("quadratic_max: warning: grid edge")
         return xs[ii]
@@ -161,32 +193,40 @@ if __name__ == "__main__":
         ds = [1. / 8., ] # EW units (A), sort-of
         ws = [1., ] # dimensionless weights
         ms = [5000.0, ] # A
-        sig = 0.05 # A
+        sigs = [0.05, ] # A
         dx = 0.01 # A
         xs = np.arange(4998. + 0.5 * dx, 5002., dx) # A
         plotprefix = "single"
     else:
         # set parameters
         np.random.seed(42)
-        ds = [1. / 2., 1. / 8., 1., 1. / 32.] # EW units (A), sort-of
-        ws = [1., 1., 1., 1.] # dimensionless weights
-        ms = np.arange(4999.25, 5001., 0.5)
-        sig = 0.05 # A
+        fwhms = [0.1077, 0.1113, 0.1044, 0.1083, 0.1364, 0.1, 0.1281,
+                    0.1212, 0.1292, 0.1526, 0.1575, 0.1879] # FWHM of Gaussian fit to line (A)
+        sigs = np.asarray(fwhms) / 2. / np.sqrt(2. * np.log(2.)) # Gaussian sigma (A)
+        ms = [4997.967, 4998.228, 4998.543, 4999.116, 4999.508, 5000.206, 5000.348,
+                5000.734, 5000.991, 5001.229, 5001.483, 5001.87] # line center (A)
+        ds = [-0.113524, -0.533461, -0.030569, -0.351709, -0.792123, -0.234712, -0.610711,
+                -0.123613, -0.421898, -0.072386, -0.147218, -0.757536] # depth of line center (normalized flux)
+        ws = np.ones_like(ds) # dimensionless weights
         dx = 0.01 # A
         xs = np.arange(4998. + 0.5 * dx, 5002., dx) # A
-        plotprefix = "four"
+        plotprefix = "realistic"
 
     # make and plot fake data
     N = 512
-    data, ivars, true_rvs = make_data(N, xs, ds, ms, sig)
+    data, ivars, true_rvs = make_data(N, xs, ds, ms, sigs)
     plt.clf()
     for n in range(8):
         plt.step(xs, data[n, :] + 0.25 * n, color="k")
     plt.title("examples of (fake) data")
     plt.savefig(plotprefix+"_data.png")
+    
+    # make a perfect template from stacked observations
+    template_xs, template_ys = make_template(data, true_rvs, xs, dx, plot=True, 
+                    plotname=plotprefix+'_perfecttemplate.png')
 
     # compute CRLBs
-    dmodel_dv = dsynth_dv(0., xs, ds, ms, sig)
+    dmodel_dv = dsynth_dv(0., xs, ds, ms, sigs)
     crlbs = np.zeros(N)
     for n in range(N): # average CRLB; averaging over true RV
         crlbs[n] = np.sum(dmodel_dv * ivars[n, :] * dmodel_dv)
@@ -195,10 +235,12 @@ if __name__ == "__main__":
 
     # get best-fit velocities
     halfwidth = 0.075 # A; half-width of binary mask
-    options = ([make_synth, (xs, ds, ms, sig), xcorr],
-               [make_synth, (xs, ds, ms, sig), chisq],
+    options = ([make_synth, (xs, ds, ms, sigs), xcorr],
+               [make_synth, (xs, ds, ms, sigs), chisq],
                [make_mask, (xs, ws, ms, 0.5 * dx, halfwidth), xcorr],
-               [make_mask, (xs, ws, ms, 0.5 * dx, halfwidth), chisq])
+               [make_mask, (xs, ws, ms, 0.5 * dx, halfwidth), chisq],
+               [shift_template, (xs, template_xs, template_ys), xcorr],
+               [shift_template, (xs, template_xs, template_ys), chisq])
     best_rvs = np.zeros((N, len(options)))
     for n in range(N):
         if n == 0:
@@ -215,8 +257,10 @@ if __name__ == "__main__":
 
     # plot best_rvs
     for j, options in enumerate(options):
-        rms = np.sqrt(np.var(best_rvs[:,j] - true_rvs, ddof=1)) # m/s
+        rms = np.sqrt(np.nanvar(best_rvs[:,j] - true_rvs, ddof=1)) # m/s
         titlestr = "{}: {} / {}: {:.2f} m/s".format(j, options[0].__name__, options[2].__name__, rms)
+        
+        print "{} / {}: {}".format(options[0].__name__, options[2].__name__, best_rvs[:,j])
 
         plt.clf()
         plt.plot(true_rvs, best_rvs[:, j], "k.", alpha=0.5)
@@ -247,7 +291,7 @@ if __name__ == "__main__":
     # make and plot synth model
     plt.clf()
     for rv in rvs[::4]:
-        model = make_synth(rv, xs, ds, ms, sig)
+        model = make_synth(rv, xs, ds, ms, sigs)
         plt.plot(xs, model + 0.0011 * rv, "k-")
     plt.plot(xs, 4096. * dmodel_dv, "r-")
     plt.title("models and velocity derivative (times 4096)")
@@ -275,3 +319,4 @@ if __name__ == "__main__":
     plt.ylabel("RV std")
     plt.ylim(0., 500.)
     plt.savefig(plotprefix+"_rv_std_hw.png".format(j))
+        

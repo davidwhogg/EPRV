@@ -30,6 +30,8 @@
 
 Accurate spectroscopic measurements of radial velocities (RVs) have long been a critical tool across many subfields of astronomy, from galactic dynamics to cosmic expansion. In recent decades, however, a new focus has emerged on \textit{extremely precise} RV measurements of stars as a means of detecting exoplanets. For this application, measuring the absolute velocity of the star is much less important than resolving its changes through time. With sub-\ms-level precision required for the detection of Earth-like planets, vast amounts of effort have been poured into the engineering challenges of constructing a sufficiently stable spectrograph (or, failing that, being able to track the drift of a spectrograph over time) \todo{(cite some review papers)}. At the same time, great strides have been made towards disentangling true Doppler shifts from imitative signals like stellar pulsations and magnetic activity features \todo{(cite some review papers)}.  In this work, we investigate another fundamentally important but less commonly discussed aspect of the quest for maximum-precision RVs: the method of analysis used to extract the RV from a stellar spectrum.
 
+
+
 [summary of the ways people derive precise RVs from spectra; citations to binary mask papers, papers that compare template matching to binary masks]
 
 \section{Overview of Methods}
@@ -39,8 +41,8 @@ cross-correlation vs. max likelihood
 for either of these, you could use:
 \begin{itemize}
 \item ``binary'' mask
-\item synthetic spectrum
-\item data-driven synthetic spectrum
+\item synthetic spectrum (or template observation?)
+\item data-driven template spectrum
 \end{itemize}
 
 information theory based discussion of these: compute the CRLB for velocity
@@ -53,9 +55,23 @@ information theory based discussion of these: compute the CRLB for velocity
 \end{figure}
 
 
-\section{Generating Test Spectra}
+\section{Testing with Toy-Model Spectra}
 
-how the model works in general, Doppler shifting, parameterization of white noise. number of lines.
+The basic model that we use to generate fake spectra is extremely simple, assuming a perfectly normalized continuum; isolated, perfectly Gaussian spectral lines; and white noise only. We simulated a 5-$\AA$ region with random noise corresponding to an SNR of 100, a typical value for a single RV spectrum. Lines were inserted as Gaussians with arbitrarily-prescribed centers and depths (or equivalent widths). Every line was convolved with the same line spread function, which was taken to be a Gaussian with $\sigma$ = 0.05 $\AA$. %The number of lines used varies in the results discussed below.
+
+We repeated this synthesis to make a set of 512 spectra, each with a random RV between -30 \kms and 30 \kms (the approximate amplitude of the yearly RV shifts induced by barycentric motion). The RVs can be applied as a straightforward Doppler shift in the centers of each line. \todo{(add equation?)} At this point, we are able to run a cross-correlation or a maximum-likelihood analysis on the set of spectra and examine the deviations in the recovered RVs from the input RVs.
+
+\todo{remember to discuss quadratic max procedure.. probably in previous section?}
+
+\subsection{Single-Line Results}
+
+\subsection{Multi-Line Results}
+
+\section{Dependence of RV Precision on Template Quality}
+
+how well does the mask/template approximate the real data? try fudging the relative line depths and locations.
+
+\section{Correlated Noise Sources and Their Consequences}
 
 additional noise considerations:
 \begin{itemize}
@@ -64,11 +80,9 @@ additional noise considerations:
 \item cosmic rays?
 \end{itemize}
 
-another important consideration is how well the mask/template fits the data. summarize masks and templates tried (do they know the correct relative line depths and locations?).
+\section{Application to Real Spectra}
 
-\section{Single-Line Results}
-
-\section{Multi-Line Results}
+how do our results compare to the reality of the situation? (will this tell us anything other than ``real spectra are more complicated and our template is silly''?)
 
 \section{Discussion}
 

@@ -17,7 +17,7 @@ if __name__ == "__main__":
     ax.plot(wave, flux, color='black') # plot the Sun
     
     # plot mask lines
-    mask = (wi > 4995.) & (wf < 5005.)
+    mask = (wi > 4997.8) & (wf < 5002.2)
     for wwi,wwf,wweight in zip(wi[mask], wf[mask], weight[mask]):
         ws = np.arange(wwi,wwf,0.001)
         #fs1 = np.zeros_like(ws)
@@ -29,6 +29,6 @@ if __name__ == "__main__":
     # tweak & save    
     ax.set_xlabel(r'Wavelength $(\AA)$')
     ax.set_ylabel('Normalized Flux')
-    ax.set_xlim([5000., 5005.])
+    ax.set_xlim([4997.8, 5002.2])
     ax.set_ylim([0.05, 1.03])   
     fig.savefig('binarymask.pdf')
