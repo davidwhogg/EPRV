@@ -77,6 +77,7 @@ def make_template(all_data, rvs, xs, dx, plot=False, plotname='template.png'):
     `xs`: `[M]` array of wavelength values
     `dx`: linear spacing desired for template wavelength grid (A)
     """
+    foo = 30.
     (N,M) = np.shape(all_data)
     all_xs = np.empty_like(all_data)
     for i in range(N):
@@ -85,11 +86,11 @@ def make_template(all_data, rvs, xs, dx, plot=False, plotname='template.png'):
     template_xs = np.arange(min(all_xs), max(all_xs), dx)
     template_ys = np.empty_like(template_xs)
     for i,t in enumerate(template_xs):
-        ind = (all_xs >= t-dx/2.) & (all_xs <= t+dx/2.)
-        template_ys[i] = np.median(all_data[ind])
+        ind = (all_xs >= t-dx/2.) & (all_xs < t+dx/2.)
+        template_ys[i] = np.sum(all_data[ind]) / np.sum(ind)
     if plot == True:
         plt.clf()
-        plt.scatter(all_xs, all_data)
+        plt.scatter(all_xs, all_data, marker=".", alpha=0.25)
         plt.plot(template_xs, template_ys, color='black', lw=2)
         plt.title('Fitting a template to all data')
         plt.savefig(plotname)
@@ -97,7 +98,7 @@ def make_template(all_data, rvs, xs, dx, plot=False, plotname='template.png'):
     
 def shift_template(rv, xs, template_xs, template_ys):
     f = interp1d(template_xs / doppler(rv), template_ys, bounds_error = False, 
-            fill_value = np.nan)
+            fill_value = 1.)
     return f(xs)
     
 
@@ -213,7 +214,7 @@ if __name__ == "__main__":
         plotprefix = "realistic"
 
     # make and plot fake data
-    N = 512
+    N = 16
     data, ivars, true_rvs = make_data(N, xs, ds, ms, sigs)
     plt.clf()
     for n in range(8):
@@ -232,91 +233,146 @@ if __name__ == "__main__":
         crlbs[n] = np.sum(dmodel_dv * ivars[n, :] * dmodel_dv)
     crlb = 1. / np.sqrt(np.mean(crlbs))
     print("CRLB:", crlb, "m/s")
-
-    # get best-fit velocities
-    halfwidth = 0.075 # A; half-width of binary mask
-    options = ([make_synth, (xs, ds, ms, sigs), xcorr],
-               [make_synth, (xs, ds, ms, sigs), chisq],
-               [make_mask, (xs, ws, ms, 0.5 * dx, halfwidth), xcorr],
-               [make_mask, (xs, ws, ms, 0.5 * dx, halfwidth), chisq],
-               [shift_template, (xs, template_xs, template_ys), xcorr],
-               [shift_template, (xs, template_xs, template_ys), chisq])
-    best_rvs = np.zeros((N, len(options)))
+    
+    # compute first-guess RVs with binary mask
+    halfwidth = 0.06 # A; half-width of binary mask
+    guess_rvs = true_rvs + np.random.normal(0., 100., size=N) # add in some random dispersion
+    args = (xs, ws, ms, 0.5 * dx, halfwidth)
+    rvs_0 = np.zeros(N)
     for n in range(N):
-        if n == 0:
-            plt.clf()
-        for j, (template, args, method) in enumerate(options):
-            rvs, objs = get_objective_on_grid(data[n], ivars[n], template, args, method, true_rvs[n], 1024.)
-            best_rvs[n,j] = quadratic_max(rvs, objs)
-            if n == 0:
-                plt.plot(rvs, objs, marker=".", alpha=0.5)
-                plt.axvline(best_rvs[n, j], alpha=0.5)
-        if n == 0:
-            plt.title("grids of objective values")
-            plt.savefig(plotprefix+"_objective.png")
-
-    # plot best_rvs
-    for j, options in enumerate(options):
-        rms = np.sqrt(np.nanvar(best_rvs[:,j] - true_rvs, ddof=1)) # m/s
-        titlestr = "{}: {} / {}: {:.2f} m/s".format(j, options[0].__name__, options[2].__name__, rms)
+        rvs, objs = get_objective_on_grid(data[n], ivars[n], make_mask, args, xcorr, guess_rvs[n], 1024.)
+        rvs_0[n] = quadratic_max(rvs, objs)
         
-        print "{} / {}: {}".format(options[0].__name__, options[2].__name__, best_rvs[:,j])
-
+    plt.clf()
+    plt.plot(true_rvs, rvs_0 - true_rvs, "k.", alpha=0.5)
+    plt.axhline(2. * crlb, color="k", lw=0.5, alpha=0.5)
+    plt.axhline(-2. * crlb, color="k", lw=0.5, alpha=0.5)
+    plt.title("round 0: binary mask xcorr")
+    plt.xlabel("true RVs")
+    plt.ylabel("RV mistake")
+    plt.ylim(-500., 500.)
+    plt.savefig("round0_rv_mistakes.png")
+    
+    rms = np.sqrt(np.nanvar(rvs_0 - true_rvs, ddof=1)) # m/s    
+    print "Round 0: RV RMS = {0:.2f} m/s".format(rms)
+    
+    # make a mask and iterate:
+    n_iter = 3
+    best_rvs = rvs_0
+    for i in range(n_iter):
+        template_xs, template_ys = make_template(data, best_rvs, xs, dx, plot=True, 
+                    plotname='template_round{}.png'.format(i+1))
+        args = (xs, template_xs, template_ys)
+        for n in range(N):
+            rvs, objs = get_objective_on_grid(data[n], ivars[n], shift_template, args, xcorr, best_rvs[n], 1024.)
+            rv = quadratic_max(rvs, objs)  # update best guess
+            if np.isfinite(rv):
+                best_rvs[n] = rv
+            
+            
+        rms = np.sqrt(np.nanvar(best_rvs - true_rvs, ddof=1)) # m/s    
+        rmeds = np.sqrt(np.median((best_rvs - true_rvs) ** 2))
+        print "Round {0}: RV RMS = {1:.2f} m/s".format(i+1, rms)
+        
         plt.clf()
-        plt.plot(true_rvs, best_rvs[:, j], "k.", alpha=0.5)
-        plt.title(titlestr)
-        plt.xlabel("true RVs")
-        plt.ylabel("measured RVs")
-        plt.savefig(plotprefix+"_rv_measurements_{:02d}.png".format(j))
-
-        plt.clf()
-        plt.plot(true_rvs, best_rvs[:, j] - true_rvs, "k.", alpha=0.5)
+        plt.plot(true_rvs, best_rvs - true_rvs, "k.", alpha=0.5)
         plt.axhline(2. * crlb, color="k", lw=0.5, alpha=0.5)
         plt.axhline(-2. * crlb, color="k", lw=0.5, alpha=0.5)
-        plt.title(titlestr)
+        plt.title("round {}: stacked template xcorr".format(i+1))
         plt.xlabel("true RVs")
         plt.ylabel("RV mistake")
         plt.ylim(-500., 500.)
-        plt.savefig(plotprefix+"_rv_mistakes_{:02d}.png".format(j))
+        plt.savefig("round{}_rv_mistakes.png".format(i+1))
+      
 
-    # make and plot mask
-    rvs -= np.min(rvs)
-    plt.clf()
-    for rv in rvs[::4]:
-        mask = make_mask(rv, xs, ws, ms, 0.075, 0.5 * dx)
-        plt.step(xs, mask + 0.0011 * rv, "k-")
-    plt.title("pixel-convolved binary masks")
-    plt.savefig(plotprefix+"_mask.png")
 
-    # make and plot synth model
-    plt.clf()
-    for rv in rvs[::4]:
-        model = make_synth(rv, xs, ds, ms, sigs)
-        plt.plot(xs, model + 0.0011 * rv, "k-")
-    plt.plot(xs, 4096. * dmodel_dv, "r-")
-    plt.title("models and velocity derivative (times 4096)")
-    plt.savefig(plotprefix+"_synth.png")
-
-    # look at rms as a function of binary-mask width
-    method = xcorr
-    template = make_mask
-    tiny = 1. / 128.
-    halfwidths = np.arange(1./64. + 0.5 * tiny, 1./8., tiny)
-    best_rvs_hw = np.zeros((N, len(halfwidths)))
-    for j,halfwidth in enumerate(halfwidths):
-        print(j)
+    if False:
+        # comparative tests of methods        
+        # get best-fit velocities
+        halfwidth = 0.075 # A; half-width of binary mask
+        options = ([make_synth, (xs, ds, ms, sigs), xcorr],
+                   [make_synth, (xs, ds, ms, sigs), chisq],
+                   [make_mask, (xs, ws, ms, 0.5 * dx, halfwidth), xcorr],
+                   [make_mask, (xs, ws, ms, 0.5 * dx, halfwidth), chisq],
+                   [shift_template, (xs, template_xs, template_ys), xcorr],
+                   [shift_template, (xs, template_xs, template_ys), chisq])
+        best_rvs = np.zeros((N, len(options)))
         for n in range(N):
-            args = (xs, ws, ms, 0.5 * dx, halfwidth)
-            rvs, objs = get_objective_on_grid(data[n], ivars[n], template, args, method, true_rvs[n], 1024.)
-            best_rvs_hw[n,j] = quadratic_max(rvs, objs)
+            if n == 0:
+                plt.clf()
+            for j, (template, args, method) in enumerate(options):
+                rvs, objs = get_objective_on_grid(data[n], ivars[n], template, args, method, true_rvs[n], 1024.)
+                best_rvs[n,j] = quadratic_max(rvs, objs)
+                if n == 0:
+                    plt.plot(rvs, objs, marker=".", alpha=0.5)
+                    plt.axvline(best_rvs[n, j], alpha=0.5)
+            if n == 0:
+                plt.title("grids of objective values")
+                plt.savefig(plotprefix+"_objective.png")
 
-    # plot best_rvs
-    plt.clf()
-    plt.plot(halfwidths, np.sqrt(np.var(best_rvs_hw - true_rvs[:, None], axis=0, ddof=1)), "k.", alpha=0.5)
-    plt.axhline(crlb, color="k", lw=0.5, alpha=0.5)
-    plt.title("dependence on binary mask half-width")
-    plt.xlabel("binary mask half-width")
-    plt.ylabel("RV std")
-    plt.ylim(0., 500.)
-    plt.savefig(plotprefix+"_rv_std_hw.png".format(j))
+        # plot best_rvs
+        for j, options in enumerate(options):
+            rms = np.sqrt(np.nanvar(best_rvs[:,j] - true_rvs, ddof=1)) # m/s
+            titlestr = "{}: {} / {}: {:.2f} m/s".format(j, options[0].__name__, options[2].__name__, rms)
+        
+            print "{} / {}: {}".format(options[0].__name__, options[2].__name__, best_rvs[:,j])
+
+            plt.clf()
+            plt.plot(true_rvs, best_rvs[:, j], "k.", alpha=0.5)
+            plt.title(titlestr)
+            plt.xlabel("true RVs")
+            plt.ylabel("measured RVs")
+            plt.savefig(plotprefix+"_rv_measurements_{:02d}.png".format(j))
+
+            plt.clf()
+            plt.plot(true_rvs, best_rvs[:, j] - true_rvs, "k.", alpha=0.5)
+            plt.axhline(2. * crlb, color="k", lw=0.5, alpha=0.5)
+            plt.axhline(-2. * crlb, color="k", lw=0.5, alpha=0.5)
+            plt.title(titlestr)
+            plt.xlabel("true RVs")
+            plt.ylabel("RV mistake")
+            plt.ylim(-500., 500.)
+            plt.savefig(plotprefix+"_rv_mistakes_{:02d}.png".format(j))
+
+        # make and plot mask
+        rvs -= np.min(rvs)
+        plt.clf()
+        for rv in rvs[::4]:
+            mask = make_mask(rv, xs, ws, ms, 0.075, 0.5 * dx)
+            plt.step(xs, mask + 0.0011 * rv, "k-")
+        plt.title("pixel-convolved binary masks")
+        plt.savefig(plotprefix+"_mask.png")
+
+        # make and plot synth model
+        plt.clf()
+        for rv in rvs[::4]:
+            model = make_synth(rv, xs, ds, ms, sigs)
+            plt.plot(xs, model + 0.0011 * rv, "k-")
+        plt.plot(xs, 4096. * dmodel_dv, "r-")
+        plt.title("models and velocity derivative (times 4096)")
+        plt.savefig(plotprefix+"_synth.png")
+    
+    if False:
+        # look at rms as a function of binary-mask width
+        method = xcorr
+        template = make_mask
+        tiny = 1. / 128.
+        halfwidths = np.arange(1./64. + 0.5 * tiny, 1./8., tiny)
+        best_rvs_hw = np.zeros((N, len(halfwidths)))
+        for j,halfwidth in enumerate(halfwidths):
+            print(j)
+            for n in range(N):
+                args = (xs, ws, ms, 0.5 * dx, halfwidth)
+                rvs, objs = get_objective_on_grid(data[n], ivars[n], template, args, method, true_rvs[n], 1024.)
+                best_rvs_hw[n,j] = quadratic_max(rvs, objs)
+
+        # plot best_rvs
+        plt.clf()
+        plt.plot(halfwidths, np.sqrt(np.var(best_rvs_hw - true_rvs[:, None], axis=0, ddof=1)), "k.", alpha=0.5)
+        plt.axhline(crlb, color="k", lw=0.5, alpha=0.5)
+        plt.title("dependence on binary mask half-width")
+        plt.xlabel("binary mask half-width")
+        plt.ylabel("RV std")
+        plt.ylim(0., 500.)
+        plt.savefig(plotprefix+"_rv_std_hw.png".format(j))
         
