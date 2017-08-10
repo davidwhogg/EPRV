@@ -127,10 +127,23 @@ def make_data(N, xs, ds, ms, sigs):
         data[n, :] += np.random.normal(size=M) / np.sqrt(ivars[n, :])
     return data, ivars, rvs
     
+def add_tellurics(xs, all_data, true_rvs, lambdas, strengths, dx, plot=False, plotname='tellurics.png'):
+    N, M = np.shape(all_data)
+    tellurics = np.ones_like(xs)
+    for ll, s in zip(lambdas, strengths):
+        tellurics *= np.exp(-s * oned_gaussian(xs, ll, dx))
+    all_data *= np.repeat([tellurics,],N,axis=0)
+    if plot:
+        plt.clf()
+        plt.plot(xs, tellurics)
+        plt.title('tellurics model')
+        plt.savefig(plotname)
+    return all_data
+    
 def quadratic(xs, p0, p1, p2):
     return p0 + p1*xs + p2*xs**2
     
-def continuum_normalize(xs, data, ivars, percents=(70., 99.), plot=False, plotname='continuum_normalization.png'):
+def continuum_normalize(xs, data, ivars, percents=(80., 99.), plot=False, plotname='continuum_normalization.png'):
     """
     `xs`: `[M]` array of wavelength values
     `data`: `[M]` array of pixels
@@ -243,9 +256,20 @@ if __name__ == "__main__":
         xs = np.arange(4998. + 0.5 * dx, 5002., dx) # A
         plotprefix = "realistic"
 
-    # make and plot fake data
-    N = 16
+    # make fake data
+    N = 128
     data, ivars, true_rvs = make_data(N, xs, ds, ms, sigs)
+    
+    # add tellurics
+    if True:
+        n_tellurics = 8
+        np.random.seed(75)
+        lambdas = np.random.uniform(xs[0], xs[-1], n_tellurics)
+        strengths = 1. - np.random.power(700., n_tellurics)
+        data = add_tellurics(xs, data, true_rvs, lambdas, strengths, dx, plot=True)
+        np.random.seed(42)
+        
+    # plot the data    
     plt.clf()
     for n in range(8):
         plt.step(xs, data[n, :] + 0.25 * n, color="k")
@@ -272,6 +296,7 @@ if __name__ == "__main__":
     crlb = 1. / np.sqrt(np.mean(crlbs))
     print("CRLB:", crlb, "m/s")
     
+    
     # compute first-guess RVs with binary mask
     halfwidth = 0.06 # A; half-width of binary mask
     guess_rvs = true_rvs + np.random.normal(0., 100., size=N) # add in some random dispersion
@@ -282,12 +307,13 @@ if __name__ == "__main__":
         rvs_0[n] = quadratic_max(rvs, objs)
         
     plt.clf()
-    plt.plot(true_rvs, rvs_0 - true_rvs, "k.", alpha=0.5)
+    resid = rvs_0 - true_rvs
+    plt.plot(true_rvs, resid - np.median(resid), "k.", alpha=0.5)
     plt.axhline(2. * crlb, color="k", lw=0.5, alpha=0.5)
     plt.axhline(-2. * crlb, color="k", lw=0.5, alpha=0.5)
     plt.title("round 0: binary mask xcorr")
     plt.xlabel("true RVs")
-    plt.ylabel("RV mistake")
+    plt.ylabel("RV mistake - offset")
     plt.ylim(-500., 500.)
     plt.savefig("round0_rv_mistakes.png")
     
@@ -313,12 +339,13 @@ if __name__ == "__main__":
         print "Round {0}: RV RMS = {1:.2f} m/s".format(i+1, rms)
         
         plt.clf()
-        plt.plot(true_rvs, best_rvs - true_rvs, "k.", alpha=0.5)
+        resid = best_rvs - true_rvs
+        plt.plot(true_rvs, resid - np.median(resid), "k.", alpha=0.5)
         plt.axhline(2. * crlb, color="k", lw=0.5, alpha=0.5)
         plt.axhline(-2. * crlb, color="k", lw=0.5, alpha=0.5)
         plt.title("round {}: stacked template xcorr".format(i+1))
         plt.xlabel("true RVs")
-        plt.ylabel("RV mistake")
+        plt.ylabel("RV mistake - offset")
         plt.ylim(-500., 500.)
         plt.savefig("round{}_rv_mistakes.png".format(i+1))
       
