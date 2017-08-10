@@ -16,6 +16,7 @@ Copyright 2017 David W Hogg (NYU).
 
 import numpy as np
 from scipy.interpolate import interp1d
+from scipy.optimize import curve_fit
 
 c = 299792458. # m/s
 
@@ -125,6 +126,35 @@ def make_data(N, xs, ds, ms, sigs):
         data[n, :] = make_synth(rv, xs, ds, ms, sigs)
         data[n, :] += np.random.normal(size=M) / np.sqrt(ivars[n, :])
     return data, ivars, rvs
+    
+def quadratic(xs, p0, p1, p2):
+    return p0 + p1*xs + p2*xs**2
+    
+def continuum_normalize(xs, data, ivars, percents=(70., 99.), plot=False, plotname='continuum_normalization.png'):
+    """
+    `xs`: `[M]` array of wavelength values
+    `data`: `[M]` array of pixels
+    `ivars`: `[M]` array of inverse variance values
+
+    Note: Presumes `ivars` is a list of diagonal entries; no
+      capacity for a dense inverse-variance matrix.
+    """
+    (lo, hi) = np.percentile(data, percents)
+    ind_fit = (data >= lo) & (data <= hi)
+    popt, pcov = curve_fit(quadratic, xs[ind_fit], data[ind_fit], 
+                    sigma=np.sqrt(1./ivars[ind_fit]), absolute_sigma=True)
+    continuum = quadratic(xs, popt[0], popt[1], popt[2])
+    normalized_data = data / continuum
+    normalized_ivars = ivars * continuum**2
+    if plot:
+        plt.clf()
+        plt.scatter(xs, data, color='k', alpha=0.5)
+        plt.scatter(xs[ind_fit], data[ind_fit], color='red')
+        plt.plot(xs, continuum)
+        plt.title('continuum normalization')
+        plt.savefig(plotname)
+    return normalized_data, normalized_ivars
+    
 
 def xcorr(data, model, ivars):
     """
@@ -221,6 +251,14 @@ if __name__ == "__main__":
         plt.step(xs, data[n, :] + 0.25 * n, color="k")
     plt.title("examples of (fake) data")
     plt.savefig(plotprefix+"_data.png")
+    
+    # continuum normalize
+    for n in range(N):
+        if n < 4:
+            data[n, :], ivars[n, :] = continuum_normalize(xs, data[n, :], ivars[n, :], plot=True,
+                plotname=plotprefix+"_normalization{0}.png".format(n))
+        else:
+            data[n, :], ivars[n, :] = continuum_normalize(xs, data[n, :], ivars[n, :])
     
     # make a perfect template from stacked observations
     template_xs, template_ys = make_template(data, true_rvs, xs, dx, plot=True, 
