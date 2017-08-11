@@ -3,7 +3,6 @@ This code is part of the EPRV project.
 Copyright 2017 David W Hogg (NYU).
 
 ## To-do:
-- Make EW of line an input variable in make_synth and propagate.
 - Optimize width of binary mask window.
 -- Do this with a function that is general-purpose
 - Look at errors as a function of synthetic-spectrum wrongness
@@ -11,12 +10,13 @@ Copyright 2017 David W Hogg (NYU).
 -- in width
 -- in line shape
 - Consider continuum noise or wrongness
-- Make a model with 2 lines or 4 to test scalings.
 """
 
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
+import pylab as plt
+
 
 c = 299792458. # m/s
 
@@ -41,14 +41,14 @@ def make_synth(rv, xs, ds, ms, sigs):
             oned_gaussian(xs * doppler(rv), m, sig))
     return synths
 
-def make_mask(rv, xs, ws, ms, w1, w2):
+def make_mask(rv, xs, ws, ms, w1, w2s):
     """
     `rv`: radial velocity in m/s (or same units as `c` above
     `xs`: [M] array of wavelength values
     `ws`: weights to apply to the binary mask tophats
     `ms`: locations of the centers of the binary mask tophats in rest wavelength
     `w1`: half-width of a wavelength pixel
-    `w2`: half-width of the binary mask tophat in rest wavelength
+    `w2s`: half-widths of the binary mask tophat in rest wavelength
 
     Notes: The doppler "shift" dilates the input wavelengths,
       and also the w1 half-width.
@@ -56,12 +56,12 @@ def make_mask(rv, xs, ws, ms, w1, w2):
     Bugs: Super-inefficient code.
     """
     assert w1 > 0
-    assert w2 > 0
+    #assert w2 > 0
     drv = doppler(rv)
-    ddd = np.abs(w1 * drv - w2)
-    dd = w1 * drv + w2
     model = np.zeros_like(xs)
-    for ww, mm in zip(ws, ms):
+    for ww, mm, w2 in zip(ws, ms, w2s):
+        ddd = np.abs(w1 * drv - w2)
+        dd = w1 * drv + w2
         xmms = xs * drv - mm
         dmodel = np.zeros_like(xs)
         dmodel[xmms > -dd] = (dd + xmms[xmms > -dd]) / (dd - ddd)
@@ -70,6 +70,35 @@ def make_mask(rv, xs, ws, ms, w1, w2):
         dmodel[xmms > dd] = 0.
         model += ww * dmodel
     return 1. - model
+    
+def plot_mask(plot_x, plot_d, mask_file, ms, ws, plotprefix='example'):
+    plt.clf()
+    plt.scatter(plot_x, plot_d, color='k', alpha=0.5)
+    # load HARPS mask
+    mask_wis, mask_wfs, harps_ws = np.loadtxt(mask_file, unpack=True, dtype=np.float64)
+    ind = (mask_wis >= 4998.) & (mask_wfs <= 5002.)  # keep only relevant lines
+    mask_wis, mask_wfs, harps_ws = mask_wis[ind], mask_wfs[ind], harps_ws[ind]
+    harps_hws = (mask_wis - mask_wfs) / 2.
+    harps_ms =  (mask_wis + mask_wfs) / 2.
+    for mm,mhw,mw in zip(harps_ms, harps_hws, harps_ws):
+        mxs = np.linspace(mm-mhw, mm+mhw, num=10)
+        plt.fill_between(mxs, np.ones(10), np.ones(10) - np.sqrt(mw), color='green', alpha=0.5)
+    plt.ylim([0.05,1.05])
+    plt.xlim([4997.8, 5002.2])
+    plt.title('HARPS binary mask')
+    plt.savefig(plotprefix+'_with_harpsmask.png')
+    
+    plt.clf()
+    plt.scatter(plot_x, plot_d, color='k', alpha=0.5)
+    halfwidth = 0.06 # A; half-width of binary mask
+    hws = np.zeros_like(ms) + halfwidth
+    for mm,mhw,mw in zip(ms, hws, ws):
+        mxs = np.linspace(mm-mhw, mm+mhw, num=10)
+        plt.fill_between(mxs, np.ones(10), np.ones(10) - np.sqrt(mw), color='green', alpha=0.5)
+    plt.ylim([0.05,1.05])
+    plt.xlim([4997.8, 5002.2])
+    plt.title('Our binary mask')
+    plt.savefig(plotprefix+'_with_ourmask.png')
     
 def make_template(all_data, rvs, xs, dx, plot=False, plotname='template.png'):
     """
@@ -181,6 +210,40 @@ def xcorr(data, model, ivars):
     dd = data - np.mean(data)
     mm = model - np.mean(model)
     return np.sum(dd * ivars * mm) / np.sqrt(np.sum(dd * ivars * dd) * np.sum(mm * ivars * mm))
+    
+def binary_xcorr(guess_rvs, xs, data, ivars, dx, ms, plot=True, harps_mask=True, mask_file='G2.mas', plotprefix='binary'):
+    # BUGS: ms should be an optional parameter
+    (N,M) = np.shape(data)
+    if harps_mask:
+        # load HARPS mask
+        mask_wis, mask_wfs, harps_ws = np.loadtxt(mask_file,unpack=True,dtype=np.float64)
+        ind = (mask_wis >= 4998.) & (mask_wfs <= 5002.)  # keep only relevant lines
+        mask_wis, mask_wfs, harps_ws = mask_wis[ind], mask_wfs[ind], harps_ws[ind]
+        harps_hws = (mask_wis - mask_wfs) / 2.
+        harps_ms =  (mask_wis + mask_wfs) / 2.
+        args = (xs, harps_ws, harps_ms, 0.5 * dx, harps_hws)
+    else:
+        halfwidth = 0.06 # A; half-width of binary mask
+        hws = np.zeros_like(ms) + halfwidth
+        args = (xs, ws, ms, 0.5 * dx, hws)
+    rvs_0 = np.zeros(N)
+    for n in range(N):
+        rvs, objs = get_objective_on_grid(data[n], ivars[n], make_mask, args, xcorr, guess_rvs[n], 1024.)
+        rvs_0[n] = quadratic_max(rvs, objs)
+        
+        if (plot) & (n < 4):
+            plt.clf()
+            plt.scatter(xs, data[n], color='k', alpha=0.5)
+            for mm,mhw,mw in zip(args[2], args[4], args[1]):
+                mxs = np.linspace(mm-mhw, mm+mhw, num=10)
+                plt.fill_between(mxs, np.ones(10), np.ones(10) - np.sqrt(mw), color='green', alpha=0.5)
+            plt.ylim([0.05,1.05])
+            plt.xlim([4997.8, 5002.2])
+            if harps_mask:
+                plt.savefig(plotprefix+'_with_harpsmask{0}.png'.format(n))
+            else:
+                plt.savefig(plotprefix+'_with_ourmask{0}.png'.format(n))
+    return rvs_0
 
 def chisq(data, model, ivars):
     """
@@ -226,10 +289,44 @@ def quadratic_max(xs, ys):
         print("quadratic_max: warning: grid edge")
         return xs[ii]
     return xs[ii] + 0.5 * delta * (ys[ii-1] - ys[ii+1]) / (ys[ii-1] - 2. * ys[ii] + ys[ii+1])
+    
+def calc_crlb(xs, ds, ms, sigs, N, ivars):
+    dmodel_dv = dsynth_dv(0., xs, ds, ms, sigs)
+    crlbs = np.zeros(N)
+    for n in range(N): # average CRLB; averaging over true RV
+        crlbs[n] = np.sum(dmodel_dv * ivars[n, :] * dmodel_dv)
+    crlb = 1. / np.sqrt(np.mean(crlbs))
+    return crlb
+    
+def plot_data(xs, data, tellurics=False, telluric_xs=[0.0], plotname="data.png"):
+    # plot the data    
+    plt.clf()
+    for n in range(8):
+        plt.step(xs, data[n, :] + 0.25 * n, color="k")
+        if tellurics:
+            assert telluric_xs.all() > 0.0
+            for t in telluric_xs:
+                plt.axvline(t, color='b', alpha=0.25, lw=1)
+    plt.title("examples of (fake) data")
+    plt.savefig(plotname)
+    
+def plot_resids(rvs, true_rvs, crlb=0.0, title='', plotname='rv_mistakes.png'):
+    # plot RV residuals
+    plt.clf()
+    resid = rvs - true_rvs
+    plt.plot(true_rvs, resid - np.median(resid), "k.", alpha=0.5)
+    if crlb > 0.0:
+        plt.axhline(2. * crlb, color="k", lw=0.5, alpha=0.5)
+        plt.axhline(-2. * crlb, color="k", lw=0.5, alpha=0.5)
+    plt.title(title)
+    plt.xlabel("true RVs")
+    plt.ylabel("RV mistake - median")
+    plt.ylim(-500., 500.)
+    plt.savefig(plotname)
 
 if __name__ == "__main__":
-    import pylab as plt
     singleline = False
+    harps_mask = True # choice of binary mask
     
     if singleline:
         # set parameters
@@ -240,7 +337,7 @@ if __name__ == "__main__":
         sigs = [0.05, ] # A
         dx = 0.01 # A
         xs = np.arange(4998. + 0.5 * dx, 5002., dx) # A
-        plotprefix = "single"
+        plotprefix = "singleline"
     else:
         # set parameters
         np.random.seed(42)
@@ -262,19 +359,12 @@ if __name__ == "__main__":
     
     # add tellurics
     if True:
-        n_tellurics = 8
-        np.random.seed(75)
-        lambdas = np.random.uniform(xs[0], xs[-1], n_tellurics)
-        strengths = 1. - np.random.power(700., n_tellurics)
-        data = add_tellurics(xs, data, true_rvs, lambdas, strengths, dx, plot=True)
-        np.random.seed(42)
-        
-    # plot the data    
-    plt.clf()
-    for n in range(8):
-        plt.step(xs, data[n, :] + 0.25 * n, color="k")
-    plt.title("examples of (fake) data")
-    plt.savefig(plotprefix+"_data.png")
+        n_tellurics = 16 # magic
+        telluric_sig = 0.1 # magic
+        telluric_xs = np.random.uniform(xs[0], xs[-1], n_tellurics)
+        # strengths = 1. - np.random.power(700., n_tellurics)
+        strengths = 0.1 * np.random.uniform(size = n_tellurics) ** 2. # magic numbers
+        data = add_tellurics(xs, data, true_rvs, telluric_xs, strengths, telluric_sig, plot=True)
     
     # continuum normalize
     for n in range(N):
@@ -283,40 +373,32 @@ if __name__ == "__main__":
                 plotname=plotprefix+"_normalization{0}.png".format(n))
         else:
             data[n, :], ivars[n, :] = continuum_normalize(xs, data[n, :], ivars[n, :])
+            
+    plot_data(xs, data, tellurics=True, telluric_xs=telluric_xs, plotname=plotprefix+"data.png")
     
     # make a perfect template from stacked observations
     template_xs, template_ys = make_template(data, true_rvs, xs, dx, plot=True, 
                     plotname=plotprefix+'_perfecttemplate.png')
 
     # compute CRLBs
-    dmodel_dv = dsynth_dv(0., xs, ds, ms, sigs)
-    crlbs = np.zeros(N)
-    for n in range(N): # average CRLB; averaging over true RV
-        crlbs[n] = np.sum(dmodel_dv * ivars[n, :] * dmodel_dv)
-    crlb = 1. / np.sqrt(np.mean(crlbs))
-    print("CRLB:", crlb, "m/s")
-    
+    crlb = calc_crlb(xs, ds, ms, sigs, N, ivars)
+    print("CRLB:", crlb, "m/s")    
     
     # compute first-guess RVs with binary mask
-    halfwidth = 0.06 # A; half-width of binary mask
     guess_rvs = true_rvs + np.random.normal(0., 100., size=N) # add in some random dispersion
-    args = (xs, ws, ms, 0.5 * dx, halfwidth)
-    rvs_0 = np.zeros(N)
-    for n in range(N):
-        rvs, objs = get_objective_on_grid(data[n], ivars[n], make_mask, args, xcorr, guess_rvs[n], 1024.)
-        rvs_0[n] = quadratic_max(rvs, objs)
-        
-    plt.clf()
-    resid = rvs_0 - true_rvs
-    plt.plot(true_rvs, resid - np.median(resid), "k.", alpha=0.5)
-    plt.axhline(2. * crlb, color="k", lw=0.5, alpha=0.5)
-    plt.axhline(-2. * crlb, color="k", lw=0.5, alpha=0.5)
-    plt.title("round 0: binary mask xcorr")
-    plt.xlabel("true RVs")
-    plt.ylabel("RV mistake - offset")
-    plt.ylim(-500., 500.)
-    plt.savefig("round0_rv_mistakes.png")
+    rvs_0 = binary_xcorr(guess_rvs, xs, data, ivars, dx, ms, 
+                harps_mask=True, mask_file='G2.mas', plotprefix=plotprefix)
+                
+    if True:
+        # plot an example binary mask
+        plot_d = np.copy(data[0,:])
+        plot_x = np.copy(xs) * doppler(true_rvs[0])
+        plot_mask(plot_x, plot_d, 'G2.mas', ms, ws, plotprefix=plotprefix)
+
     
+
+    plot_resids(rvs_0, true_rvs, crlb=crlb, title='round 0: binary mask xcorr', 
+                plotname=plotprefix+'_round0_rv_mistakes.png')
     rms = np.sqrt(np.nanvar(rvs_0 - true_rvs, ddof=1)) # m/s    
     print "Round 0: RV RMS = {0:.2f} m/s".format(rms)
     
@@ -325,7 +407,7 @@ if __name__ == "__main__":
     best_rvs = rvs_0
     for i in range(n_iter):
         template_xs, template_ys = make_template(data, best_rvs, xs, dx, plot=True, 
-                    plotname='template_round{}.png'.format(i+1))
+                    plotname=plotprefix+'_template_round{}.png'.format(i+1))
         args = (xs, template_xs, template_ys)
         for n in range(N):
             rvs, objs = get_objective_on_grid(data[n], ivars[n], shift_template, args, xcorr, best_rvs[n], 1024.)
@@ -338,16 +420,8 @@ if __name__ == "__main__":
         rmeds = np.sqrt(np.median((best_rvs - true_rvs) ** 2))
         print "Round {0}: RV RMS = {1:.2f} m/s".format(i+1, rms)
         
-        plt.clf()
-        resid = best_rvs - true_rvs
-        plt.plot(true_rvs, resid - np.median(resid), "k.", alpha=0.5)
-        plt.axhline(2. * crlb, color="k", lw=0.5, alpha=0.5)
-        plt.axhline(-2. * crlb, color="k", lw=0.5, alpha=0.5)
-        plt.title("round {}: stacked template xcorr".format(i+1))
-        plt.xlabel("true RVs")
-        plt.ylabel("RV mistake - offset")
-        plt.ylim(-500., 500.)
-        plt.savefig("round{}_rv_mistakes.png".format(i+1))
+        plot_resids(best_rvs, true_rvs, crlb=crlb, title="round {}: stacked template xcorr".format(i+1), 
+                    plotname=plotprefix+'_round{}_rv_mistakes.png'.format(i+1))
       
 
 
