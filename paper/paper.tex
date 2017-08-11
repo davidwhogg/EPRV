@@ -4,8 +4,8 @@
 \usepackage[sort&compress]{natbib}
 \usepackage[hang,flushmargin]{footmisc}
 
-\newcommand{\kms}{km s$^{-1}$}
-\newcommand{\ms}{m s$^{-1}$}
+\newcommand{\kms}{km\,s$^{-1}$}
+\newcommand{\ms}{m\,s$^{-1}$}
 \newcommand\todo[1]{\textcolor{red}{#1}}  % gotta have \usepackage{xcolor} in main doc or this won't work
 
 
@@ -16,14 +16,18 @@
 
 \title{How to Extract Maximum-Precision Radial Velocities from High-Resolution Spectra}
 
-\author{David W. Hogg}
-\affiliation{a lot of places}
-
 \author{Megan Bedell}
-\affiliation{Flatiron Institute?}
+\affiliation{Flatiron Institute}
+\affiliation{University of Chicago}
+
+\author{David W. Hogg}
+\affiliation{Flatiron Institute}
+\affiliation{CCPP, NYU}
+\affiliation{CDS, NYU}
+\affiliation{MPIA}
 
 \begin{abstract}
-
+Precise stellar radial velocity (RV) measurements are a foundational tool in the field of exoplanets, with hundreds of planets discovered by the Doppler method to date and about a dozen high-resolution spectrographs around the world dedicated to the search. Despite the importance of these observations, the detailed computation methods used to extract \ms-level RVs from stellar spectra remain largely unstandardized and unpublished. In this work, we provide a brief overview of possible approaches to extracting RVs and compare their efficiencies by testing on a segment of realistic model spectrum. We find that cross-correlation with an iteratively built data-driven template outperforms traditional cross-correlation with a quasi-binary mask by an order of magnitude and saturates the Cram\'{e}r-Rao bound under white-noise conditions. We additionally simulate the effects of unresolved micro-telluric lines and quantify their influence on the achievable RV precision. We predict that simultaneously fitting data-driven models of the stellar spectrum and telluric contributions at all observational epochs will improve the RV precision of HARPS to substantially better than 1 \ms.
 \end{abstract}
 
 \section{Introduction}
@@ -50,7 +54,7 @@ information theory based discussion of these: compute the CRLB for velocity
 \begin{figure}
 \centering
 \includegraphics[width=\columnwidth]{binarymask}
-\caption{Illustration of a quasi-binary mask (blue windows) plotted over a small segment of the solar spectrum (black). The vertical length of each mask window scales to the square root of the weight given to the line when performing a cross-correlation between mask and spectrum.}
+\caption{Illustration of a weighted binary mask (blue windows) plotted over a small segment of the solar spectrum (black). The vertical length of each mask window scales to the square root of the weight given to the line when performing a cross-correlation between mask and spectrum.}
 \label{fig:binarymask}
 \end{figure}
 
@@ -89,6 +93,7 @@ how do our results compare to the reality of the situation? (will this tell us a
 \section{Conclusions}
 
 \acknowledgements
+MPIA hospitality
 
 \bibliographystyle{apj}
 \bibliography{}%general,myref,inprep}

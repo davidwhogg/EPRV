@@ -20,11 +20,12 @@ if __name__ == "__main__":
     data_dir = "/Users/mbedell/Documents/Research/HARPSTwins/Results/"
     s = readsav(data_dir+'HIP54287_result.dat')
     Star = rv_model.RV_Model()
-    N = len(s.files)  # number of epochs
-    data = np.empty((N, 400))
-    ivars = np.empty_like(data)
     dx = 0.01 # A
-    xs = np.arange(4998., 5002., dx)
+    xs = np.arange(4987.4, 5043.5, dx)
+    N = len(s.files)  # number of epochs
+    M = len(xs)
+    data = np.empty((N, M))
+    ivars = np.empty_like(data)
     for n,(f,b,snr) in enumerate(zip(s.files, s.berv, s.snr)):
         # read in the spectrum
         spec_file = str.replace(f, 'ccf_G2', 's1d')
@@ -44,12 +45,12 @@ if __name__ == "__main__":
     for n in range(N):
         if n < 4:
             data[n, :], ivars[n, :] = continuum_normalize(xs, data[n, :], ivars[n, :], plot=True,
-                plotname=plotprefix+"_normalization{0}.png".format(n), percents=(60,99))
+                plotname=plotprefix+"_normalization{0}.png".format(n), percents=(90,99))
         else:
             data[n, :], ivars[n, :] = continuum_normalize(xs, data[n, :], ivars[n, :])
     
     # plot the data    
-    plot_data(xs, data, tellurics=False, plotname=plotprefix+"data.png")
+    plot_data(xs, data, tellurics=False, plotname=plotprefix+"_data.png")
     
     
     # make a perfect template from stacked observations
