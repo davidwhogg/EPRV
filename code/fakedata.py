@@ -307,7 +307,7 @@ def plot_data(xs, data, tellurics=False, telluric_xs=[0.0], plotname="data.png")
             assert telluric_xs.all() > 0.0
             for t in telluric_xs:
                 plt.axvline(t, color='b', alpha=0.25, lw=1)
-    plt.title("examples of (fake) data")
+    plt.title("examples of data")
     plt.savefig(plotname)
     
 def plot_resids(rvs, true_rvs, crlb=0.0, title='', plotname='rv_mistakes.png'):
@@ -358,7 +358,8 @@ if __name__ == "__main__":
     data, ivars, true_rvs = make_data(N, xs, ds, ms, sigs)
     
     # add tellurics
-    if True:
+    tellurics = True
+    if tellurics:
         n_tellurics = 16 # magic
         telluric_sig = 0.1 # magic
         telluric_xs = np.random.uniform(xs[0], xs[-1], n_tellurics)
@@ -374,7 +375,11 @@ if __name__ == "__main__":
         else:
             data[n, :], ivars[n, :] = continuum_normalize(xs, data[n, :], ivars[n, :])
             
-    plot_data(xs, data, tellurics=True, telluric_xs=telluric_xs, plotname=plotprefix+"data.png")
+    if tellurics:
+        plot_data(xs, data, tellurics=True, telluric_xs=telluric_xs, plotname=plotprefix+"data.png")
+    else:
+        plot_data(xs, data, plotname=plotprefix+"data.png")
+        
     
     # make a perfect template from stacked observations
     template_xs, template_ys = make_template(data, true_rvs, xs, dx, plot=True, 
@@ -425,7 +430,7 @@ if __name__ == "__main__":
       
 
 
-    if False:
+    if True:
         # comparative tests of methods        
         # get best-fit velocities
         halfwidth = 0.075 # A; half-width of binary mask

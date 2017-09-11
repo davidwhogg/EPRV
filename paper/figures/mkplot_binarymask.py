@@ -21,8 +21,8 @@ if __name__ == "__main__":
     for wwi,wwf,wweight in zip(wi[mask], wf[mask], weight[mask]):
         ws = np.arange(wwi,wwf,0.001)
         #fs1 = np.zeros_like(ws)
-        #fs2 = np.zeros_like(ws) + np.sqrt(wweight)
-        fs1 = np.ones_like(ws) - np.sqrt(wweight)
+        #fs2 = np.zeros_like(ws) + wweight
+        fs1 = np.ones_like(ws) - wweight
         fs2 = np.ones_like(ws)
         ax.fill_between(ws, fs1, fs2, facecolor=c2, alpha=0.6)
     

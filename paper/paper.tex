@@ -14,7 +14,7 @@
 \graphicspath{ {figures/} }
 \DeclareGraphicsExtensions{.pdf,.eps,.png}
 
-\title{How to Extract Maximum-Precision Radial Velocities from High-Resolution Spectra}
+\title{Extracting Maximum-Precision Radial Velocities from High-Resolution Spectra}
 
 \author{Megan Bedell}
 \affiliation{Flatiron Institute}
@@ -32,13 +32,16 @@ Precise stellar radial velocity (RV) measurements are a foundational tool in the
 
 \section{Introduction}
 
-Accurate spectroscopic measurements of radial velocities (RVs) have long been a critical tool across many subfields of astronomy, from galactic dynamics to cosmic expansion. In recent decades, however, a new focus has emerged on \textit{extremely precise} RV measurements of stars as a means of detecting exoplanets. For this application, measuring the absolute velocity of the star is much less important than resolving its changes through time. With sub-\ms-level precision required for the detection of Earth-like planets, vast amounts of effort have been poured into the engineering challenges of constructing a sufficiently stable spectrograph (or, failing that, being able to track the drift of a spectrograph over time) \todo{(cite some review papers)}. At the same time, great strides have been made towards disentangling true Doppler shifts from imitative signals like stellar pulsations and magnetic activity features \todo{(cite some review papers)}.  In this work, we investigate another fundamentally important but less commonly discussed aspect of the quest for maximum-precision RVs: the method of analysis used to extract the RV from a stellar spectrum.
+Accurate spectroscopic measurements of radial velocities (RVs) have long been a critical tool across many subfields of astronomy, from galactic dynamics to cosmic expansion. In recent decades, however, a new focus has emerged on \textit{extremely precise} RV measurements of stars as a means of detecting exoplanets. For this application, measuring the absolute velocity of the star is much less important than resolving its changes through time. With sub-\ms-level precision required for the detection of Earth-like planets, vast amounts of effort have been poured into the engineering challenges of constructing a sufficiently stable spectrograph (or, failing that, being able to track the drift of a spectrograph over time) \todo{(cite some review papers)}. At the same time, great strides have been made towards disentangling true Doppler shifts from imitative signals like the spectral signatures of stellar pulsations and magnetic activity features \todo{(cite some review papers)}.  In this work, we investigate another fundamentally important but less commonly discussed aspect of the quest for maximum-precision RVs: the method of analysis used to extract the RV from a stellar spectrum.
 
+While the general idea of measuring a Doppler shift by the relative motions of stellar absorption lines is fairly straightforward, there are considerable subtleties to implementing this, from the choice of template 
 
+We begin in Section \ref{s:methods} with a summary of the practices used by current RV pipelines, including cross-correlation and template fitting. We then implement these techniques to extract RVs from a 5-\r{A} section of simulated spectrum and compare their performance in Section \ref{s:fakedata}. 
 
 [summary of the ways people derive precise RVs from spectra; citations to binary mask papers, papers that compare template matching to binary masks]
 
 \section{Overview of Methods}
+\label{s:methods}
 
 cross-correlation vs. max likelihood
 
@@ -54,7 +57,7 @@ information theory based discussion of these: compute the CRLB for velocity
 \begin{figure}
 \centering
 \includegraphics[width=\columnwidth]{binarymask}
-\caption{Illustration of a weighted binary mask (blue windows) plotted over a small segment of the solar spectrum (black). The vertical length of each mask window scales to the square root of the weight given to the line when performing a cross-correlation between mask and spectrum.}
+\caption{Illustration of a weighted binary mask (blue windows) plotted over a small segment of the solar spectrum (black). The vertical length of each mask window corresponds to the weight given to the line when performing a cross-correlation between mask and spectrum.}
 \label{fig:binarymask}
 \end{figure}
 

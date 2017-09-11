@@ -20,32 +20,74 @@ if __name__ == "__main__":
     data_dir = "/Users/mbedell/Documents/Research/HARPSTwins/Results/"
     s = readsav(data_dir+'HIP54287_result.dat')
     Star = rv_model.RV_Model()
-    dx = 0.01 # A
-    xs = np.arange(4987.4, 5043.5, dx)
-    N = len(s.files)  # number of epochs
-    M = len(xs)
-    data = np.empty((N, M))
-    ivars = np.empty_like(data)
-    for n,(f,b,snr) in enumerate(zip(s.files, s.berv, s.snr)):
-        # read in the spectrum
-        spec_file = str.replace(f, 'ccf_G2', 's1d')
-        wave, spec = read_harps.read_spec(spec_file)
-        # re-introduce barycentric velocity
-        wave /= doppler(b*1.e3)
-        # remove systemic RV shift so we're looking at the same lines as example
-        wave *= doppler(54.9 * 1.e3)
-        # save the relevant bit
-        f = interp1d(wave, spec)
-        data[n,:] = f(xs)
-        ivars[n,:] = snr**2
-    true_rvs = (s.berv + s.rv - 54.9) * 1.e3  # m/s
-    plotprefix = 'harpsdata'
+    
+    if False:
+        true_rvs = (s.berv + s.rv - 54.9) * 1.e3  # m/s
+        drift = s.drift # m/s
+        dx = 0.01 # A
+        xs = np.arange(4987.4, 5043.5, dx)
+        N = len(s.files)  # number of epochs
+        M = len(xs)
+        data = np.empty((N, M))
+        ivars = np.empty_like(data)
+        for n,(f,b,snr) in enumerate(zip(s.files, s.berv, s.snr)):
+            # read in the spectrum
+            spec_file = str.replace(f, 'ccf_G2', 's1d')
+            wave, spec = read_harps.read_spec(spec_file)
+            # re-introduce barycentric velocity
+            wave /= doppler(b*1.e3)
+            # remove systemic RV shift so we're looking at the same lines as example
+            wave *= doppler(54.9 * 1.e3)
+            # save the relevant bit
+            f = interp1d(wave, spec)
+            data[n,:] = f(xs)
+            ivars[n,:] = snr**2
+        plotprefix = 'harpsdata'
+    
+    if True:
+        true_rvs = (s.berv + s.rv - 54.9) * 1.e3  # m/s
+        drift = s.drift # m/s
+        dx = 0.01 # A
+        xs = np.arange(4990.0, 5040.0, dx)
+        N = len(s.files)  # number of epochs
+        M = len(xs)
+        data = np.empty((N, M))
+        ivars = np.empty_like(data)
+        delete_ind = []
+        for n,(f,b,snr) in enumerate(zip(s.files, s.berv, s.snr)):
+            # read in the spectrum
+            spec_file = str.replace(f, 'ccf_G2', 'e2ds')
+            try:
+                wave, spec = read_harps.read_spec_2d(spec_file)
+                wave, spec = wave[39], spec[39]
+            except:
+                delete_ind = np.append(delete_ind, n)
+                continue
+            # re-introduce barycentric velocity
+            wave /= doppler(b*1.e3)
+            # remove systemic RV shift so we're looking at the same lines as example
+            wave *= doppler(54.9 * 1.e3)
+            # save the relevant bit
+            f = interp1d(wave, spec)
+            data[n,:] = f(xs)
+            ivars[n,:] = snr**2
+        # remove epochs without data:
+        delete_ind = np.asarray(delete_ind, dtype=int)
+        data = np.delete(data, delete_ind, axis=0)
+        ivars = np.delete(ivars, delete_ind, axis=0)
+        true_rvs = np.delete(true_rvs, delete_ind)
+        drift = np.delete(drift, delete_ind)
+        N -= len(delete_ind)
+        
+        #Star.get_data(s.files)
+        #order_rvs = Star.data[:,order,1] 
+        plotprefix = 'harpsorder'
     
     # continuum normalize
     for n in range(N):
         if n < 4:
             data[n, :], ivars[n, :] = continuum_normalize(xs, data[n, :], ivars[n, :], plot=True,
-                plotname=plotprefix+"_normalization{0}.png".format(n), percents=(90,99))
+                plotname=plotprefix+"_normalization{0}.png".format(n))
         else:
             data[n, :], ivars[n, :] = continuum_normalize(xs, data[n, :], ivars[n, :])
     
@@ -108,5 +150,8 @@ if __name__ == "__main__":
         
         plot_resids(best_rvs, true_rvs, crlb=crlb, title="round {}: stacked template xcorr".format(i+1), 
                     plotname=plotprefix+'_round{}_rv_mistakes.png'.format(i+1))
+    
+    rms = np.sqrt(np.nanvar(best_rvs - true_rvs - drift, ddof=1)) # m/s                    
+    print "RV RMS after drift correction = {0:.2f} m/s".format(rms)
 
     
