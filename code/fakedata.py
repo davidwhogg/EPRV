@@ -172,7 +172,8 @@ def add_tellurics(xs, all_data, true_rvs, lambdas, strengths, dx, plot=False, pl
 def quadratic(xs, p0, p1, p2):
     return p0 + p1*xs + p2*xs**2
     
-def continuum_normalize(xs, data, ivars, percents=(80., 99.), plot=False, plotname='continuum_normalization.png'):
+def continuum_normalize(xs, data, ivars, percents=(80., 99.), p0=None, plot=False, 
+                        plotname='continuum_normalization.png', iterate=1):
     """
     `xs`: `[M]` array of wavelength values
     `data`: `[M]` array of pixels
@@ -181,21 +182,22 @@ def continuum_normalize(xs, data, ivars, percents=(80., 99.), plot=False, plotna
     Note: Presumes `ivars` is a list of diagonal entries; no
       capacity for a dense inverse-variance matrix.
     """
-    (lo, hi) = np.percentile(data, percents)
-    ind_fit = (data >= lo) & (data <= hi)
-    popt, pcov = curve_fit(quadratic, xs[ind_fit], data[ind_fit], 
-                    sigma=np.sqrt(1./ivars[ind_fit]), absolute_sigma=True)
-    continuum = quadratic(xs, popt[0], popt[1], popt[2])
-    normalized_data = data / continuum
-    normalized_ivars = ivars * continuum**2
-    if plot:
-        plt.clf()
-        plt.scatter(xs, data, color='k', alpha=0.5)
-        plt.scatter(xs[ind_fit], data[ind_fit], color='red')
-        plt.plot(xs, continuum)
-        plt.title('continuum normalization')
-        plt.savefig(plotname)
-    return normalized_data, normalized_ivars
+    for i in range(iterate):
+        (lo, hi) = np.percentile(data, percents)
+        ind_fit = (data >= lo) & (data <= hi)
+        popt, pcov = curve_fit(quadratic, xs[ind_fit], data[ind_fit], 
+                        sigma=np.sqrt(1./ivars[ind_fit]), absolute_sigma=True, p0=p0)
+        continuum = quadratic(xs, popt[0], popt[1], popt[2])
+        if plot:
+            plt.clf()
+            plt.scatter(xs, data, color='k', alpha=0.5)
+            plt.scatter(xs[ind_fit], data[ind_fit], color='red')
+            plt.plot(xs, continuum)
+            plt.title('continuum normalization round {0}'.format(i))
+            plt.savefig(plotname)
+        data = data / continuum
+        ivars = ivars * continuum**2
+    return data, ivars
     
 
 def xcorr(data, model, ivars):
@@ -214,10 +216,15 @@ def xcorr(data, model, ivars):
 def binary_xcorr(guess_rvs, xs, data, ivars, dx, ms, plot=True, harps_mask=True, mask_file='G2.mas', plotprefix='binary'):
     # BUGS: ms should be an optional parameter
     (N,M) = np.shape(data)
+    x_lo, x_hi = min(xs), max(xs)
+    print x_lo, x_hi
     if harps_mask:
         # load HARPS mask
         mask_wis, mask_wfs, harps_ws = np.loadtxt(mask_file,unpack=True,dtype=np.float64)
-        ind = (mask_wis >= 4998.) & (mask_wfs <= 5002.)  # keep only relevant lines
+        ind = (mask_wis >= x_lo) & (mask_wfs <= x_hi)  # keep only relevant lines
+        if len(ind) <= 1:
+            print "Not enough lines found in this wavelength region."
+            return None
         mask_wis, mask_wfs, harps_ws = mask_wis[ind], mask_wfs[ind], harps_ws[ind]
         harps_hws = (mask_wis - mask_wfs) / 2.
         harps_ms =  (mask_wis + mask_wfs) / 2.
@@ -238,7 +245,7 @@ def binary_xcorr(guess_rvs, xs, data, ivars, dx, ms, plot=True, harps_mask=True,
                 mxs = np.linspace(mm-mhw, mm+mhw, num=10)
                 plt.fill_between(mxs, np.ones(10), np.ones(10) - np.sqrt(mw), color='green', alpha=0.5)
             plt.ylim([0.05,1.05])
-            plt.xlim([4997.8, 5002.2])
+            plt.xlim([x_lo, x_hi])
             if harps_mask:
                 plt.savefig(plotprefix+'_with_harpsmask{0}.png'.format(n))
             else:

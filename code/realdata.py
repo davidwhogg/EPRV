@@ -21,11 +21,13 @@ if __name__ == "__main__":
     s = readsav(data_dir+'HIP54287_result.dat')
     Star = rv_model.RV_Model()
     
-    if False:
+    if True:
+        # grab a little section from s1d files
         true_rvs = (s.berv + s.rv - 54.9) * 1.e3  # m/s
         drift = s.drift # m/s
         dx = 0.01 # A
-        xs = np.arange(4987.4, 5043.5, dx)
+        xs = np.arange(4998.0, 5002.0, dx)
+        #xs = np.arange(5940.0, 5950.0, dx) # tellurics region
         N = len(s.files)  # number of epochs
         M = len(xs)
         data = np.empty((N, M))
@@ -42,9 +44,13 @@ if __name__ == "__main__":
             f = interp1d(wave, spec)
             data[n,:] = f(xs)
             ivars[n,:] = snr**2
+            
+        p0 = None # starting guess for continuum normalization
+        iterate = 1
         plotprefix = 'harpsdata'
     
-    if True:
+    if False:
+        # grab a full order from e2ds files
         true_rvs = (s.berv + s.rv - 54.9) * 1.e3  # m/s
         drift = s.drift # m/s
         dx = 0.01 # A
@@ -81,15 +87,19 @@ if __name__ == "__main__":
         
         #Star.get_data(s.files)
         #order_rvs = Star.data[:,order,1] 
+        #p0 = [-1.e9, 4.e5, -3.e1] # starting guess for continuum normalization
+        p0 = None
+        iterate = 2
         plotprefix = 'harpsorder'
     
     # continuum normalize
     for n in range(N):
         if n < 4:
             data[n, :], ivars[n, :] = continuum_normalize(xs, data[n, :], ivars[n, :], plot=True,
-                plotname=plotprefix+"_normalization{0}.png".format(n))
+                plotname=plotprefix+"_normalization{0}.png".format(n), p0=p0, iterate=iterate)
         else:
-            data[n, :], ivars[n, :] = continuum_normalize(xs, data[n, :], ivars[n, :])
+            data[n, :], ivars[n, :] = continuum_normalize(xs, data[n, :], ivars[n, :], 
+                p0=p0, iterate=iterate)
     
     # plot the data    
     plot_data(xs, data, tellurics=False, plotname=plotprefix+"_data.png")
@@ -97,61 +107,85 @@ if __name__ == "__main__":
     
     # make a perfect template from stacked observations
     template_xs, template_ys = make_template(data, true_rvs, xs, dx, plot=True, 
-                    plotname=plotprefix+'_perfecttemplate.png')   
-    
-    # adopt CRLB from fake data experiment
-    crlb = 10.5 # m/s
-    
-    # compute first-guess RVs with binary mask
-    guess_rvs = s.berv * 1.e3
-    ms = [4997.967, 4998.228, 4998.543, 4999.116, 4999.508, 5000.206, 5000.348,
-            5000.734, 5000.991, 5001.229, 5001.483, 5001.87] # line center (A)
-    ws = np.ones_like(ms)
-    rvs_0 = binary_xcorr(guess_rvs, xs, data, ivars, dx, ms, 
-                harps_mask=True, mask_file='G2.mas', plotprefix=plotprefix)
-    
-    if True:
-        # plot an example binary mask
-        plot_d = np.copy(data[4,:])
-        plot_x = np.copy(xs) * doppler(true_rvs[4])
-        plot_mask(plot_x, plot_d, 'G2.mas', ms, ws, plotprefix=plotprefix)
-    
-    plot_resids(rvs_0, true_rvs, crlb=crlb, title='round 0: binary mask xcorr', 
-                plotname=plotprefix+'_round0_rv_mistakes.png')
-    rms = np.sqrt(np.nanvar(rvs_0 - true_rvs, ddof=1)) # m/s    
-    print "Round 0: RV RMS = {0:.2f} m/s".format(rms)
-    
-    # make a mask and iterate:
-    n_iter = 3
-    best_rvs = rvs_0
-    for i in range(n_iter):
-        template_xs, template_ys = make_template(data, best_rvs, xs, dx, plot=True, 
-                    plotname=plotprefix+'_template_round{}.png'.format(i+1))
-        args = (xs, template_xs, template_ys)
-        for n in range(N):
-            rvs, objs = get_objective_on_grid(data[n], ivars[n], shift_template, args, xcorr, best_rvs[n], 1024.)
-            rv = quadratic_max(rvs, objs)  # update best guess
-            if np.isfinite(rv):
-                best_rvs[n] = rv
-            '''''
-            if n == 0:
-                plt.clf()
-                plt.plot(rvs, objs, marker=".", alpha=0.5)
-                plt.axvline(best_rvs[n], alpha=0.5)
-            if n == 0:
-                plt.title("grids of objective values")
-                plt.savefig(plotprefix+"_objective_round{0}.png".format(i))
-            '''
-            
-            
-        rms = np.sqrt(np.nanvar(best_rvs - true_rvs, ddof=1)) # m/s    
-        rmeds = np.sqrt(np.median((best_rvs - true_rvs) ** 2))
-        print "Round {0}: RV RMS = {1:.2f} m/s".format(i+1, rms)
+                    plotname=plotprefix+'_perfecttemplate.png')  
+                    
+    if False:
+        # tellurics experiment
         
-        plot_resids(best_rvs, true_rvs, crlb=crlb, title="round {}: stacked template xcorr".format(i+1), 
-                    plotname=plotprefix+'_round{}_rv_mistakes.png'.format(i+1))
+        # shift & subtract stellar template
+        for n in range(N):
+            if n in [0,10,20]:
+                # plot
+                plt.clf()
+                plt.plot(xs, data[n,:], color='k')
+                plt.plot(xs, shift_template(true_rvs[n], xs, template_xs, template_ys), color='red')                
+                plt.title('data + shifted stellar template for epoch #{0}'.format(n))
+                plt.savefig(plotprefix+'_dividetemplate{0}.png'.format(n))
+            
+            data[n, :] /= shift_template(true_rvs[n], xs, template_xs, template_ys)
+            
+        plot_data(xs, data, tellurics=False, plotname=plotprefix+"_tellurics.png")
+        
+        telluric_xs, telluric_ys = make_template(data, np.zeros_like(true_rvs), xs, dx, plot=True, 
+                    plotname=plotprefix+'_tellurictemplate.png')
+        
+                    
+    if True: 
+        # try to get RVs
+        
+        # adopt CRLB from fake data experiment
+        crlb = 10.5 # m/s
     
-    rms = np.sqrt(np.nanvar(best_rvs - true_rvs - drift, ddof=1)) # m/s                    
-    print "RV RMS after drift correction = {0:.2f} m/s".format(rms)
+        # compute first-guess RVs with binary mask
+        guess_rvs = s.berv * 1.e3
+        ms = [0.0]
+        ws = np.ones_like(ms)
+        rvs_0 = binary_xcorr(guess_rvs, xs, data, ivars, dx, ms, 
+                    harps_mask=True, mask_file='G2.mas', plotprefix=plotprefix)
+    
+        '''if True:
+            # plot an example binary mask
+            plot_d = np.copy(data[4,:])
+            plot_x = np.copy(xs) * doppler(true_rvs[4])
+            plot_mask(plot_x, plot_d, 'G2.mas', ms, ws, plotprefix=plotprefix)
+                    '''
+    
+        plot_resids(rvs_0, true_rvs, crlb=crlb, title='round 0: binary mask xcorr', 
+                    plotname=plotprefix+'_round0_rv_mistakes.png')
+        rms = np.sqrt(np.nanvar(rvs_0 - true_rvs, ddof=1)) # m/s    
+        print "Round 0: RV RMS = {0:.2f} m/s".format(rms)
+    
+        # make a mask and iterate:
+        n_iter = 3
+        best_rvs = rvs_0
+        for i in range(n_iter):
+            template_xs, template_ys = make_template(data, best_rvs, xs, dx, plot=True, 
+                        plotname=plotprefix+'_template_round{}.png'.format(i+1))
+            args = (xs, template_xs, template_ys)
+            for n in range(N):
+                rvs, objs = get_objective_on_grid(data[n], ivars[n], shift_template, args, xcorr, best_rvs[n], 1024.)
+                rv = quadratic_max(rvs, objs)  # update best guess
+                if np.isfinite(rv):
+                    best_rvs[n] = rv
+                '''''
+                if n == 0:
+                    plt.clf()
+                    plt.plot(rvs, objs, marker=".", alpha=0.5)
+                    plt.axvline(best_rvs[n], alpha=0.5)
+                if n == 0:
+                    plt.title("grids of objective values")
+                    plt.savefig(plotprefix+"_objective_round{0}.png".format(i))
+                '''
+            
+            
+            rms = np.sqrt(np.nanvar(best_rvs - true_rvs, ddof=1)) # m/s    
+            rmeds = np.sqrt(np.median((best_rvs - true_rvs) ** 2))
+            print "Round {0}: RV RMS = {1:.2f} m/s".format(i+1, rms)
+        
+            plot_resids(best_rvs, true_rvs, crlb=crlb, title="round {}: stacked template xcorr".format(i+1), 
+                        plotname=plotprefix+'_round{}_rv_mistakes.png'.format(i+1))
+    
+        rms = np.sqrt(np.nanvar(best_rvs - true_rvs - drift, ddof=1)) # m/s                    
+        print "RV RMS after drift correction = {0:.2f} m/s".format(rms)
 
     
