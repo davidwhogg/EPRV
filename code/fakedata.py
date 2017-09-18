@@ -213,8 +213,8 @@ def xcorr(data, model, ivars):
     mm = model - np.mean(model)
     return np.sum(dd * ivars * mm) / np.sqrt(np.sum(dd * ivars * dd) * np.sum(mm * ivars * mm))
     
-def binary_xcorr(guess_rvs, xs, data, ivars, dx, ms, plot=True, harps_mask=True, mask_file='G2.mas', plotprefix='binary'):
-    # BUGS: ms should be an optional parameter
+def binary_xcorr(guess_rvs, xs, data, ivars, dx, ms=None, plot=True, harps_mask=True, logflux=False,
+                 mask_file='G2.mas', plotprefix='binary'):
     (N,M) = np.shape(data)
     x_lo, x_hi = min(xs), max(xs)
     print x_lo, x_hi
@@ -228,10 +228,13 @@ def binary_xcorr(guess_rvs, xs, data, ivars, dx, ms, plot=True, harps_mask=True,
         mask_wis, mask_wfs, harps_ws = mask_wis[ind], mask_wfs[ind], harps_ws[ind]
         harps_hws = (mask_wis - mask_wfs) / 2.
         harps_ms =  (mask_wis + mask_wfs) / 2.
+        #if logflux:
+        #    harps_ws = np.log(harps_ws)
         args = (xs, harps_ws, harps_ms, 0.5 * dx, harps_hws)
     else:
         halfwidth = 0.06 # A; half-width of binary mask
         hws = np.zeros_like(ms) + halfwidth
+        ws = np.ones_like(ms)
         args = (xs, ws, ms, 0.5 * dx, hws)
     rvs_0 = np.zeros(N)
     for n in range(N):
@@ -243,8 +246,12 @@ def binary_xcorr(guess_rvs, xs, data, ivars, dx, ms, plot=True, harps_mask=True,
             plt.scatter(xs, data[n], color='k', alpha=0.5)
             for mm,mhw,mw in zip(args[2], args[4], args[1]):
                 mxs = np.linspace(mm-mhw, mm+mhw, num=10)
-                plt.fill_between(mxs, np.ones(10), np.ones(10) - np.sqrt(mw), color='green', alpha=0.5)
-            plt.ylim([0.05,1.05])
+                mxs /= doppler(rvs_0[n])
+                if logflux:
+                    plt.fill_between(mxs, np.zeros(10), np.zeros(10) - mw, color='green', alpha=0.5)
+                else:
+                    plt.fill_between(mxs, np.ones(10), np.ones(10) - mw, color='green', alpha=0.5)
+            #plt.ylim([0.05,1.05])
             plt.xlim([x_lo, x_hi])
             if harps_mask:
                 plt.savefig(plotprefix+'_with_harpsmask{0}.png'.format(n))

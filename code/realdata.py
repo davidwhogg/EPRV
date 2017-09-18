@@ -23,11 +23,12 @@ if __name__ == "__main__":
     
     if True:
         # grab a little section from s1d files
-        true_rvs = (s.berv + s.rv - 54.9) * 1.e3  # m/s
+        true_rvs = ( -s.berv + s.rv - 54.9) * 1.e3  # m/s
+        #true_rvs = (s.rv - 54.9) * 1.e3 
         drift = s.drift # m/s
         dx = 0.01 # A
-        xs = np.arange(4998.0, 5002.0, dx)
-        #xs = np.arange(5940.0, 5950.0, dx) # tellurics region
+        #xs = np.arange(4998.0, 5002.0, dx)
+        xs = np.arange(5910.0, 5925.0, dx) # tellurics region
         N = len(s.files)  # number of epochs
         M = len(xs)
         data = np.empty((N, M))
@@ -37,7 +38,7 @@ if __name__ == "__main__":
             spec_file = str.replace(f, 'ccf_G2', 's1d')
             wave, spec = read_harps.read_spec(spec_file)
             # re-introduce barycentric velocity
-            wave /= doppler(b*1.e3)
+            wave *= doppler(b*1.e3)
             # remove systemic RV shift so we're looking at the same lines as example
             wave *= doppler(54.9 * 1.e3)
             # save the relevant bit
@@ -48,6 +49,15 @@ if __name__ == "__main__":
         p0 = None # starting guess for continuum normalization
         iterate = 1
         plotprefix = 'harpsdata'
+        
+        # make a mask since HARPS doesn't give one for this region:
+        fwhms = [0.1299, 0.1309, 0.1409, 0.2118, 0.1251, 0.1206, 
+                    0.1264, 0.1264] # FWHM of Gaussian fit to line (A)
+        sigs = np.asarray(fwhms) / 2. / np.sqrt(2. * np.log(2.)) # Gaussian sigma (A)
+        ms = [5905.675, 5906.842, 5909.979, 5914.165, 5916.255, 5922.117,
+                    5927.792, 5929.679] # line center (A)
+        ds = [-0.464135, -0.169625, -0.29082, -0.652963, -0.472075, -0.231232,
+                    -0.36773, -0.354367] # depth of line center (normalized flux)
     
     if False:
         # grab a full order from e2ds files
@@ -104,33 +114,98 @@ if __name__ == "__main__":
     # plot the data    
     plot_data(xs, data, tellurics=False, plotname=plotprefix+"_data.png")
     
+    # move to log(flux)
+    #data = np.log(data)
+    #ivars = -0.5 * np.log(ivars)
+    #ivars = np.log(ivars)
+    #logflux = True
+    logflux = False
     
     # make a perfect template from stacked observations
     template_xs, template_ys = make_template(data, true_rvs, xs, dx, plot=True, 
-                    plotname=plotprefix+'_perfecttemplate.png')  
+                    plotname=plotprefix+'_perfecttemplate.png')
                     
-    if False:
+    if True:
         # tellurics experiment
         
-        # shift & subtract stellar template
+        # adopt CRLB from fake data experiment
+        crlb = 10.5 # m/s
+    
+        # compute first-guess RVs with binary mask
+        guess_rvs = -s.berv * 1.e3
+        #ms = [0.0]
+        #ws = np.ones_like(ms)
+        rvs_0 = binary_xcorr(guess_rvs, xs, data, ivars, dx, ms, logflux=logflux, 
+                    harps_mask=False, mask_file='G2.mas', plotprefix=plotprefix)
+        #rvs_0 = guess_rvs
+    
+        '''if True:
+            # plot an example binary mask
+            plot_d = np.copy(data[4,:])
+            plot_x = np.copy(xs) * doppler(true_rvs[4])
+            plot_mask(plot_x, plot_d, 'G2.mas', ms, ws, plotprefix=plotprefix)
+                    '''
+    
+        plot_resids(rvs_0, true_rvs, crlb=crlb, title='pre-telluric correction: binary mask xcorr', 
+                    plotname=plotprefix+'_pretelluric_rv_mistakes.png')
+        rms = np.sqrt(np.nanvar(rvs_0 - true_rvs, ddof=1)) # m/s    
+        print "pre-telluric correction: RV RMS = {0:.2f} m/s".format(rms)
+        
+        # get telluric template
+        telluric_data = np.copy(data)
         for n in range(N):
             if n in [0,10,20]:
                 # plot
                 plt.clf()
                 plt.plot(xs, data[n,:], color='k')
-                plt.plot(xs, shift_template(true_rvs[n], xs, template_xs, template_ys), color='red')                
+                plt.plot(xs, shift_template(rvs_0[n], xs, template_xs, template_ys), color='red')                
                 plt.title('data + shifted stellar template for epoch #{0}'.format(n))
                 plt.savefig(plotprefix+'_dividetemplate{0}.png'.format(n))
             
-            data[n, :] /= shift_template(true_rvs[n], xs, template_xs, template_ys)
+            shifted_template = shift_template(rvs_0[n], xs, template_xs, template_ys)
+            #data[n, :] /= shifted_template
+            telluric_data[n, :] = np.exp(np.log(data[n, :]) - np.log(shifted_template))
             
-        plot_data(xs, data, tellurics=False, plotname=plotprefix+"_tellurics.png")
+        plot_data(xs, telluric_data, tellurics=False, plotname=plotprefix+"_tellurics.png")
         
-        telluric_xs, telluric_ys = make_template(data, np.zeros_like(true_rvs), xs, dx, plot=True, 
+        telluric_rvs = np.zeros_like(true_rvs)
+        telluric_xs, telluric_ys = make_template(telluric_data, telluric_rvs, xs, dx, plot=True, 
                     plotname=plotprefix+'_tellurictemplate.png')
-        
                     
-    if True: 
+        telluric_ys, _ = continuum_normalize(telluric_xs, telluric_ys, ivars[0, :], plot=True,
+            plotname=plotprefix+"_telluricnorm.png", p0=p0, iterate=iterate)
+        
+        # shift & subtract tellurics from star
+        for n in range(N):
+            if n in [0,10,20]:
+                # plot
+                plt.clf()
+                plt.plot(xs, data[n,:], color='k')
+                plt.plot(xs, shift_template(telluric_rvs[n], xs, telluric_xs, telluric_ys), color='red')                
+                plt.title('data + shifted telluric template for epoch #{0}'.format(n))
+                plt.savefig(plotprefix+'_dividetellurics{0}.png'.format(n))
+            
+            shifted_tellurics = shift_template(telluric_rvs[n], xs, telluric_xs, telluric_ys)
+            #data[n, :] /= shifted_template
+            data[n, :] = np.exp(np.log(data[n, :]) - np.log(shifted_tellurics)) 
+            
+        # plot the data    
+        plot_data(xs, data, tellurics=False, plotname=plotprefix+"_posttelluric_data.png")
+    
+        # make a template from stacked observations
+        template_xs, template_ys = make_template(data, true_rvs, xs, dx, plot=True, 
+                        plotname=plotprefix+'_posttelluric_template.png')
+            
+        # get RVs from cleaned stellar spectra:
+        rvs_1 = binary_xcorr(rvs_0, xs, data, ivars, dx, ms, logflux=logflux, 
+                    harps_mask=False, mask_file='G2.mas', plotprefix=plotprefix)
+        plot_resids(rvs_1, true_rvs, crlb=crlb, title='post-telluric correction: binary mask xcorr', 
+                    plotname=plotprefix+'_posttelluric_rv_mistakes.png')
+        rms = np.sqrt(np.nanvar(rvs_1 - true_rvs, ddof=1)) # m/s    
+        print "post-telluric correction: RV RMS = {0:.2f} m/s".format(rms)
+
+                    
+    if False: 
         # try to get RVs
         
         # adopt CRLB from fake data experiment
@@ -139,8 +214,8 @@ if __name__ == "__main__":
         # compute first-guess RVs with binary mask
         guess_rvs = s.berv * 1.e3
         ms = [0.0]
-        ws = np.ones_like(ms)
-        rvs_0 = binary_xcorr(guess_rvs, xs, data, ivars, dx, ms, 
+        #ws = np.ones_like(ms)
+        rvs_0 = binary_xcorr(guess_rvs, xs, data, ivars, dx, ms, logflux=logflux, 
                     harps_mask=True, mask_file='G2.mas', plotprefix=plotprefix)
     
         '''if True:
