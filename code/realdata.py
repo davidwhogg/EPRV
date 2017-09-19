@@ -7,8 +7,57 @@ Copyright 2017 David W Hogg (NYU), Megan Bedell (Flatiron, UChicago).
 import numpy as np
 import matplotlib.pyplot as plt
 from fakedata import *
+from scipy.interpolate import interp1d
 
 c = 299792458. # m/s
+
+def make_template_and_pca(all_data, rvs, xs, dx, plot=False, plotname='template.png'):
+    """
+    `all_data`: `[N, M]` array of pixels
+    `rvs`: `[N]` array of RVs
+    `xs`: `[M]` array of wavelength values
+    `dx`: linear spacing desired for template wavelength grid (A)
+    """
+    (N,M) = np.shape(all_data)
+    all_xs = np.empty_like(all_data)
+    rectangular_data = np.empty_like(all_data)
+    for i in range(N):
+        all_xs[i,:] = xs * doppler(rvs[i]) # shift to rest frame
+        f = interp1d(all_xs[i,:], all_data[i,:]) # interpolation is bad
+        rectangular_data[i,:] = f(xs)
+    bad = np.isnan(rectangular_data)
+    rectangular_data[bad] = 1.0
+    weights = np.ones_like(rectangular_data)
+    weights[bad] = 0.0
+    template_ys = np.exp(np.sum(weights * np.log(rectangular_data), axis=0) / np.sum(weights, axis=0)) # horrifying
+    
+    if plot == True:
+        plt.clf()
+        plt.scatter(all_xs, all_data, marker=".", alpha=0.25)
+        plt.plot(xs, template_ys, color='black', lw=2)
+        plt.title('Fitting a template to all data')
+        plt.savefig(plotname)
+    
+    amps = np.zeros(N)
+    pca1 = np.zeros(M)    
+    rectangular_resids = np.log(rectangular_data) - np.log(template_ys[None,:])
+    niter = 3
+    for iter in range(niter):
+        rectangular_resids[bad] = (amps[:,None] * pca1[None,:])[bad]
+        u, s, v = np.linalg.svd(rectangular_resids, full_matrices=False)
+        pca1 = v[0,:]
+        amps = u[:,0] * s[0]
+        
+    for n in range(N):
+        if n in [0,10,20]:
+            # plot
+            plt.clf()
+            plt.plot(xs, np.exp(rectangular_resids[n,:]), color='k')
+            plt.plot(xs, np.exp(amps[n] * pca1), color='red')                
+            plt.title('resids + first PCA component for epoch #{0}'.format(n))
+            plt.savefig(plotprefix+'_pcaresids{0}.png'.format(n))
+    
+    return template_ys, pca1, amps
 
 if __name__ == "__main__":
     harps_mask = True # mask choice
@@ -102,6 +151,7 @@ if __name__ == "__main__":
         iterate = 2
         plotprefix = 'harpsorder'
     
+    raw_data = np.copy(data)
     # continuum normalize
     for n in range(N):
         if n < 4:
@@ -110,6 +160,12 @@ if __name__ == "__main__":
         else:
             data[n, :], ivars[n, :] = continuum_normalize(xs, data[n, :], ivars[n, :], 
                 p0=p0, iterate=iterate)
+    '''
+    for n in range(N):
+        continuum = np.percentile(data[n,:], 95.)
+        data[n, :] /= continuum
+        ivars[n, :] *= continuum**2
+    '''''
     
     # plot the data    
     plot_data(xs, data, tellurics=False, plotname=plotprefix+"_data.png")
@@ -169,7 +225,8 @@ if __name__ == "__main__":
         plot_data(xs, telluric_data, tellurics=False, plotname=plotprefix+"_tellurics.png")
         
         telluric_rvs = np.zeros_like(true_rvs)
-        telluric_xs, telluric_ys = make_template(telluric_data, telluric_rvs, xs, dx, plot=True, 
+        telluric_xs = xs
+        telluric_ys, pca1, amps = make_template_and_pca(telluric_data, telluric_rvs, xs, dx, plot=True, 
                     plotname=plotprefix+'_tellurictemplate.png')
                     
         telluric_ys, _ = continuum_normalize(telluric_xs, telluric_ys, ivars[0, :], plot=True,
@@ -181,9 +238,12 @@ if __name__ == "__main__":
                 # plot
                 plt.clf()
                 plt.plot(xs, data[n,:], color='k')
-                plt.plot(xs, shift_template(telluric_rvs[n], xs, telluric_xs, telluric_ys), color='red')                
+                this_telluric = np.exp(np.log(telluric_ys) + amps[n] * pca1)
+                plt.plot(xs, shift_template(telluric_rvs[n], xs, telluric_xs, this_telluric), color='blue', alpha=0.7)                
+                plt.plot(xs, shift_template(telluric_rvs[n], xs, telluric_xs, telluric_ys), color='red', alpha=0.5)                
                 plt.title('data + shifted telluric template for epoch #{0}'.format(n))
                 plt.savefig(plotprefix+'_dividetellurics{0}.png'.format(n))
+                
             
             shifted_tellurics = shift_template(telluric_rvs[n], xs, telluric_xs, telluric_ys)
             #data[n, :] /= shifted_template
@@ -203,6 +263,30 @@ if __name__ == "__main__":
                     plotname=plotprefix+'_posttelluric_rv_mistakes.png')
         rms = np.sqrt(np.nanvar(rvs_1 - true_rvs, ddof=1)) # m/s    
         print "post-telluric correction: RV RMS = {0:.2f} m/s".format(rms)
+        
+        if False:
+        
+            # subtract both star and tellurics from non-continuum normalized spectra:
+            for n in range(N):
+               if n in [0,10,20]:
+                   # plot
+                   plt.clf()
+                   plt.plot(xs, raw_data[n,:], color='k')
+                   plt.plot(xs, shift_template(telluric_rvs[n], xs, telluric_xs, telluric_ys), color='red')                
+                   plt.plot(xs, shift_template(rvs_0[n], xs, template_xs, template_ys), color='blue')                
+                   plt.title('data + shifted templates for epoch #{0}'.format(n))
+                   plt.savefig(plotprefix+'_divideall{0}.png'.format(n))
+           
+               shifted_tellurics = shift_template(telluric_rvs[n], xs, telluric_xs, telluric_ys)
+               #data[n, :] /= shifted_template
+               raw_data[n, :] = np.exp(np.log(raw_data[n, :]) - np.log(shifted_tellurics)) 
+           
+               shifted_template = shift_template(rvs_1[n], xs, template_xs, template_ys)
+               #data[n, :] /= shifted_template
+               raw_data[n, :] = np.exp(np.log(raw_data[n, :]) - np.log(shifted_template))
+           
+               plot_data(xs, raw_data, tellurics=False, plotname=plotprefix+"_continuum_data.png")
+           
 
                     
     if False: 

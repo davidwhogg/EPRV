@@ -113,7 +113,8 @@ def make_template(all_data, rvs, xs, dx, plot=False, plotname='template.png'):
     for i in range(N):
         all_xs[i,:] = xs * doppler(rvs[i]) # shift to rest frame
     all_data, all_xs = np.ravel(all_data), np.ravel(all_xs)
-    template_xs = np.arange(min(all_xs), max(all_xs), dx)
+    tiny = 1.e-4
+    template_xs = np.arange(min(all_xs)-tiny, max(all_xs), dx)
     template_ys = np.empty_like(template_xs)
     for i,t in enumerate(template_xs):
         ind = (all_xs >= t-dx/2.) & (all_xs < t+dx/2.)
