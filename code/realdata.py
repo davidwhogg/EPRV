@@ -11,12 +11,13 @@ from scipy.interpolate import interp1d
 
 c = 299792458. # m/s
 
-def make_template_and_pca(all_data, rvs, xs, dx, plot=False, plotname='template.png'):
+def make_template_and_pca(all_data, rvs, xs, dx, k, plot=False, plotname='template.png'):
     """
     `all_data`: `[N, M]` array of pixels
     `rvs`: `[N]` array of RVs
     `xs`: `[M]` array of wavelength values
     `dx`: linear spacing desired for template wavelength grid (A)
+    `k`: number of PCA components to return
     """
     (N,M) = np.shape(all_data)
     all_xs = np.empty_like(all_data)
@@ -38,26 +39,26 @@ def make_template_and_pca(all_data, rvs, xs, dx, plot=False, plotname='template.
         plt.title('Fitting a template to all data')
         plt.savefig(plotname)
     
-    amps = np.zeros(N)
-    pca1 = np.zeros(M)    
+    amps = np.zeros((N,k))
+    pcas = np.zeros((k,M))   
     rectangular_resids = np.log(rectangular_data) - np.log(template_ys[None,:])
     niter = 3
     for iter in range(niter):
-        rectangular_resids[bad] = (amps[:,None] * pca1[None,:])[bad]
+        rectangular_resids[bad] = (np.dot(amps, pcas))[bad]
         u, s, v = np.linalg.svd(rectangular_resids, full_matrices=False)
-        pca1 = v[0,:]
-        amps = u[:,0] * s[0]
+        pcas = v[:k,:]
+        amps = u[:,:k] * s[:k]
         
     for n in range(N):
         if n in [0,10,20]:
             # plot
             plt.clf()
             plt.plot(xs, np.exp(rectangular_resids[n,:]), color='k')
-            plt.plot(xs, np.exp(amps[n] * pca1), color='red')                
-            plt.title('resids + first PCA component for epoch #{0}'.format(n))
+            plt.plot(xs, np.exp(np.dot(amps[n,:], pcas)), color='red')                
+            plt.title('resids + first {0} PCA components for epoch #{1}'.format(k, n))
             plt.savefig(plotprefix+'_pcaresids{0}.png'.format(n))
     
-    return template_ys, pca1, amps
+    return template_ys, pcas, amps
 
 if __name__ == "__main__":
     harps_mask = True # mask choice
@@ -226,7 +227,8 @@ if __name__ == "__main__":
         
         telluric_rvs = np.zeros_like(true_rvs)
         telluric_xs = xs
-        telluric_ys, pca1, amps = make_template_and_pca(telluric_data, telluric_rvs, xs, dx, plot=True, 
+        k_pca = 2
+        telluric_ys, pcas, amps = make_template_and_pca(telluric_data, telluric_rvs, xs, dx, k_pca, plot=True, 
                     plotname=plotprefix+'_tellurictemplate.png')
                     
         telluric_ys, _ = continuum_normalize(telluric_xs, telluric_ys, ivars[0, :], plot=True,
@@ -238,7 +240,7 @@ if __name__ == "__main__":
                 # plot
                 plt.clf()
                 plt.plot(xs, data[n,:], color='k')
-                this_telluric = np.exp(np.log(telluric_ys) + amps[n] * pca1)
+                this_telluric = np.exp(np.log(telluric_ys) + np.dot(amps[n], pcas))
                 plt.plot(xs, shift_template(telluric_rvs[n], xs, telluric_xs, this_telluric), color='blue', alpha=0.7)                
                 plt.plot(xs, shift_template(telluric_rvs[n], xs, telluric_xs, telluric_ys), color='red', alpha=0.5)                
                 plt.title('data + shifted telluric template for epoch #{0}'.format(n))
