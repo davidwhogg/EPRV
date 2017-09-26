@@ -231,6 +231,8 @@ if __name__ == "__main__":
         telluric_ys, pcas, amps = make_template_and_pca(telluric_data, telluric_rvs, xs, dx, k_pca, plot=True, 
                     plotname=plotprefix+'_tellurictemplate.png')
                     
+        np.savetxt(plotprefix+'_tellurictemplate.txt', np.transpose([telluric_xs,telluric_ys]))
+                    
         telluric_ys, _ = continuum_normalize(telluric_xs, telluric_ys, ivars[0, :], plot=True,
             plotname=plotprefix+"_telluricnorm.png", p0=p0, iterate=iterate)
         
@@ -241,8 +243,10 @@ if __name__ == "__main__":
                 plt.clf()
                 plt.plot(xs, data[n,:], color='k')
                 this_telluric = np.exp(np.log(telluric_ys) + np.dot(amps[n], pcas))
+                this_model = np.exp(np.log(shift_template(rvs_0[n], xs, template_xs, template_ys)) + np.log(this_telluric))
                 plt.plot(xs, shift_template(telluric_rvs[n], xs, telluric_xs, this_telluric), color='blue', alpha=0.7)                
                 plt.plot(xs, shift_template(telluric_rvs[n], xs, telluric_xs, telluric_ys), color='red', alpha=0.5)                
+                plt.plot(xs, this_model, color='g', alpha=0.7)
                 plt.title('data + shifted telluric template for epoch #{0}'.format(n))
                 plt.savefig(plotprefix+'_dividetellurics{0}.png'.format(n))
                 
