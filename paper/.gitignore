@@ -1,0 +1,5 @@
+*.aux
+*.log
+*~
+paper.pdf
+*Notes.bib
