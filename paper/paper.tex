@@ -4,41 +4,58 @@
 \usepackage[sort&compress]{natbib}
 \usepackage[hang,flushmargin]{footmisc}
 
-\newcommand{\kms}{km\,s$^{-1}$}
-\newcommand{\ms}{m\,s$^{-1}$}
+\newcommand{\unit}[1]{\mathrm{#1}}
+\newcommand{\km}{\unit{km}}
+\newcommand{\m}{\unit{m}}
+\newcommand{\s}{\unit{s}}
+\newcommand{\kms}{\km\,\s^{-1}}
+\newcommand{\ms}{\m\,\s^{-1}}
 \newcommand\todo[1]{\textcolor{red}{#1}}  % gotta have \usepackage{xcolor} in main doc or this won't work
-
-
+\newcommand{\acronym}[1]{{\small{#1}}}
+\newcommand{\project}[1]{\textsl{#1}}
+\newcommand{\HARPS}{\project{\acronym{HARPS}}}
+\newcommand{\RV}{\acronym{RV}}
+\newcommand{\CRLB}{\acronym{CRLB}}
 
 \begin{document}
 \graphicspath{ {figures/} }
 \DeclareGraphicsExtensions{.pdf,.eps,.png}
 
-\title{Extracting Maximum-Precision Radial Velocities from High-Resolution Spectra}
+\title{Achieving maximum possible precision on stellar radial-velocity measurements in multi-epoch spectroscopy}
 
 \author{Megan Bedell}
-\affiliation{Flatiron Institute}
-\affiliation{University of Chicago}
+\affil{Center for Computational Astrophysics, Flatiron Institute, 162 Fifth Ave, New York, NY 10010, USA}
+\affiliation{University of Chicago, NEED DETAILS HERE}
 
-\author{David W. Hogg}
-\affiliation{Flatiron Institute}
-\affiliation{CCPP, NYU}
-\affiliation{CDS, NYU}
-\affiliation{MPIA}
+\author[0000-0003-2866-9403]{David W. Hogg}
+\affil{Center for Cosmology and Particle Physics, Department of Physics, New York University, 726 Broadway, New York, NY 10003, USA}
+\affil{Center for Data Science, New York University, 60 Fifth Ave, New York, NY 10011, USA}
+\affil{Max-Planck-Institut f\"ur Astronomie, K\"onigstuhl 17, D-69117 Heidelberg}
 
 \begin{abstract}
-Precise stellar radial velocity (RV) measurements are a foundational tool in the field of exoplanets, with hundreds of planets discovered by the Doppler method to date and about a dozen high-resolution spectrographs around the world dedicated to the search. Despite the importance of these observations, the detailed computation methods used to extract \ms-level RVs from stellar spectra remain largely unstandardized and unpublished. In this work, we provide a brief overview of possible approaches to extracting RVs and compare their efficiencies by testing on a segment of realistic model spectrum. We find that cross-correlation with an iteratively built data-driven template outperforms traditional cross-correlation with a quasi-binary mask by an order of magnitude and saturates the Cram\'{e}r-Rao bound under white-noise conditions. We additionally simulate the effects of unresolved micro-telluric lines and quantify their influence on the achievable RV precision. We predict that simultaneously fitting data-driven models of the stellar spectrum and telluric contributions at all observational epochs will improve the RV precision of HARPS to substantially better than 1 \ms.
+% context
+Extremely precise stellar radial velocity (\RV) measurements are a foundational tool in the field of exoplanets, with hundreds of planets discovered by the Doppler method to date and about a dozen high-resolution spectrographs around the world dedicated to the search.
+Despite the importance of these observations, the detailed computation methods used to extract $\ms$-level \RV s from stellar spectra remain largely unstandardized and unpublished.
+% aims
+In this work, we look at sensible approaches to extracting \RV s from a data set of  one-dimensional, calibrated, extracted spectra and compare their efficiencies by testing on a segment of realistic model spectrum, with the goal of identifying methods that have the possibility of saturating the information-theoretic Cram\'er--Rao bound (\CRLB) on measurement precision.
+% methods
+We consider cross-correlations (and, equivalently, maximum-likelihood optimizations) of the data with generalized (weighted) binary masks, synthetic spectra (from, say, stellar models), and data-driven templates constructed from the data themselves.
+We also consider the possibility that there are low-amplitude, unknown telluric absorptions (micro-tellurics) affecting the spectrum, and continuum-normalization problems, and measure improvements that flow from modeling those also in a data-driven way.
+% results
+We find that of all methods, only cross-correlation with an iteratively built data-driven template comes close to saturating the \CRLB.
+We find that if there are micro-tellurics, they can be captured by a data-driven model.
+We predict that simultaneously fitting data-driven models of the stellar spectrum and telluric contributions at all observational epochs will improve the \RV\ precision of \HARPS\ to substantially better than $1\,\ms$.
 \end{abstract}
 
 \section{Introduction}
 
-Accurate spectroscopic measurements of radial velocities (RVs) have long been a critical tool across many subfields of astronomy, from galactic dynamics to cosmic expansion. In recent decades, however, a new focus has emerged on \textit{extremely precise} RV measurements of stars as a means of detecting exoplanets. For this application, measuring the absolute velocity of the star is much less important than resolving its changes through time. With sub-\ms-level precision required for the detection of Earth-like planets, vast amounts of effort have been poured into the engineering challenges of constructing a sufficiently stable spectrograph (or, failing that, being able to track the drift of a spectrograph over time) \todo{(cite some review papers)}. At the same time, great strides have been made towards disentangling true Doppler shifts from imitative signals like the spectral signatures of stellar pulsations and magnetic activity features \todo{(cite some review papers)}.  In this work, we investigate another fundamentally important but less commonly discussed aspect of the quest for maximum-precision RVs: the method of analysis used to extract the RV from a stellar spectrum.
+Accurate spectroscopic measurements of radial velocities (\RV s) have long been a critical tool across many subfields of astronomy, from galactic dynamics to cosmic expansion. In recent decades, however, a new focus has emerged on \textit{extremely precise} \RV\ measurements of stars as a means of detecting exoplanets. For this application, measuring the absolute velocity of the star is much less important than resolving its changes through time. With sub-$\ms$-level precision required for the detection of Earth-like planets, vast amounts of effort have been poured into the engineering challenges of constructing a sufficiently stable spectrograph (or, failing that, being able to track the drift of a spectrograph over time) \todo{(cite some review papers)}. At the same time, great strides have been made towards disentangling true Doppler shifts from imitative signals like the spectral signatures of stellar pulsations and magnetic activity features \todo{(cite some review papers)}.  In this work, we investigate another fundamentally important but less commonly discussed aspect of the quest for maximum-precision \RV s: the method of analysis used to extract the \RV\ from a stellar spectrum.
 
 While the general idea of measuring a Doppler shift by the relative motions of stellar absorption lines is fairly straightforward, there are considerable subtleties to implementing this, from the choice of template 
 
-We begin in Section \ref{s:methods} with a summary of the practices used by current RV pipelines, including cross-correlation and template fitting. We then implement these techniques to extract RVs from a 5-\r{A} section of simulated spectrum and compare their performance in Section \ref{s:fakedata}. 
+We begin in Section \ref{s:methods} with a summary of the practices used by current \RV\ pipelines, including cross-correlation and template fitting. We then implement these techniques to extract \RV s from a 5-\r{A} section of simulated spectrum and compare their performance in Section \ref{s:fakedata}. 
 
-[summary of the ways people derive precise RVs from spectra; citations to binary mask papers, papers that compare template matching to binary masks]
+[summary of the ways people derive precise \RV s from spectra; citations to binary mask papers, papers that compare template matching to binary masks]
 
 \section{Overview of Methods}
 \label{s:methods}
@@ -64,9 +81,9 @@ information theory based discussion of these: compute the CRLB for velocity
 
 \section{Testing with Toy-Model Spectra}
 
-The basic model that we use to generate fake spectra is extremely simple, assuming a perfectly normalized continuum; isolated, perfectly Gaussian spectral lines; and white noise only. We simulated a 5-$\AA$ region with random noise corresponding to an SNR of 100, a typical value for a single RV spectrum. Lines were inserted as Gaussians with arbitrarily-prescribed centers and depths (or equivalent widths). Every line was convolved with the same line spread function, which was taken to be a Gaussian with $\sigma$ = 0.05 $\AA$. %The number of lines used varies in the results discussed below.
+The basic model that we use to generate fake spectra is extremely simple, assuming a perfectly normalized continuum; isolated, perfectly Gaussian spectral lines; and white noise only. We simulated a 5-$\AA$ region with random noise corresponding to an SNR of 100, a typical value for a single \RV\ spectrum. Lines were inserted as Gaussians with arbitrarily-prescribed centers and depths (or equivalent widths). Every line was convolved with the same line spread function, which was taken to be a Gaussian with $\sigma$ = 0.05 $\AA$. %The number of lines used varies in the results discussed below.
 
-We repeated this synthesis to make a set of 512 spectra, each with a random RV between -30 \kms and 30 \kms (the approximate amplitude of the yearly RV shifts induced by barycentric motion). The RVs can be applied as a straightforward Doppler shift in the centers of each line. \todo{(add equation?)} At this point, we are able to run a cross-correlation or a maximum-likelihood analysis on the set of spectra and examine the deviations in the recovered RVs from the input RVs.
+We repeated this synthesis to make a set of 512 spectra, each with a random \RV\ between $-30$ and $30\,\kms$ (the approximate amplitude of the yearly \RV\ shifts induced by barycentric motion). The \RV s can be applied as a straightforward Doppler shift in the centers of each line. \todo{(add equation?)} At this point, we are able to run a cross-correlation or a maximum-likelihood analysis on the set of spectra and examine the deviations in the recovered \RV s from the input \RV s.
 
 \todo{remember to discuss quadratic max procedure.. probably in previous section?}
 
