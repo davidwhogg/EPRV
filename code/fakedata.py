@@ -107,7 +107,7 @@ def make_template(all_data, rvs, xs, dx, plot=False, plotname='template.png'):
     `xs`: `[M]` array of wavelength values
     `dx`: linear spacing desired for template wavelength grid (A)
     """
-    foo = 30.
+    foo = 30. #magic
     (N,M) = np.shape(all_data)
     all_xs = np.empty_like(all_data)
     for i in range(N):

@@ -52,7 +52,7 @@ for either of these, you could use:
 \item data-driven template spectrum
 \end{itemize}
 
-information theory based discussion of these: compute the CRLB for velocity
+information theory based discussion of these: compute the CRLB for velocity. Mention how uncertainties are typically computed (Butler 1996 and Bouchy 2001 formulae).
 
 \begin{figure}
 \centering
@@ -64,19 +64,31 @@ information theory based discussion of these: compute the CRLB for velocity
 
 \section{Testing with Toy-Model Spectra}
 
-The basic model that we use to generate fake spectra is extremely simple, assuming a perfectly normalized continuum; isolated, perfectly Gaussian spectral lines; and white noise only. We simulated a 5-$\AA$ region with random noise corresponding to an SNR of 100, a typical value for a single RV spectrum. Lines were inserted as Gaussians with arbitrarily-prescribed centers and depths (or equivalent widths). Every line was convolved with the same line spread function, which was taken to be a Gaussian with $\sigma$ = 0.05 $\AA$. %The number of lines used varies in the results discussed below.
+The basic model that we use to generate fake spectra is extremely simple, assuming a perfectly normalized continuum; isolated, perfectly Gaussian spectral lines; and white noise only. We simulated a 5-$\AA$ region with random noise corresponding to an SNR of 100, a typical value for a single RV spectrum. Lines were inserted as Gaussians with arbitrarily-prescribed centers and depths. Every line was convolved with the same line spread function, which was taken to be a Gaussian with $\sigma$ = 0.05 $\AA$.
 
-We repeated this synthesis to make a set of 512 spectra, each with a random RV between -30 \kms and 30 \kms (the approximate amplitude of the yearly RV shifts induced by barycentric motion). The RVs can be applied as a straightforward Doppler shift in the centers of each line. \todo{(add equation?)} At this point, we are able to run a cross-correlation or a maximum-likelihood analysis on the set of spectra and examine the deviations in the recovered RVs from the input RVs.
+We repeated this synthesis to make a set of 512 spectra, each with a random RV between -30 \kms and 30 \kms (the approximate amplitude of the yearly RV shifts induced by barycentric motion). The RVs can be applied as a straightforward Doppler shift on the central wavelength of each line. \todo{(add equation?)} At this point, we are able to run a cross-correlation or a maximum-likelihood analysis on the set of spectra and examine the deviations in the recovered RVs from the input RVs.
 
 \todo{remember to discuss quadratic max procedure.. probably in previous section?}
 
 \subsection{Single-Line Results}
 
+We began with the simplest test case possible: a single, strong absorption feature.
+
+What is the CRLB?
+
+Discuss scaling of the CRLB with line FWHM, constrast/depth, etc. According to Lovis \& Fischer (2010) and Figueira (2017), $\sigma_{RV}$ should go as $\frac{\sqrt{FWHM}}{SNR \times C}$, where $C$ is the line contrast, or the depth of the line as a fraction of the continuum level \todo{(check on this definition of contrast)}. Do we see this?
+
 \subsection{Multi-Line Results}
 
-\section{Dependence of RV Precision on Template Quality}
+Our next test involved a more realistic test spectrum. We measured the centers and depths of \todo{N} lines in the Solar spectrum between {x - y} $\AA$ and used these measurements to generate a synthetic spectrum that closely resembles a typical observation of a Sun-like star.
 
-how well does the mask/template approximate the real data? try fudging the relative line depths and locations.
+What is the CRLB for this case? Binary mask cross-correlation is very far from saturating it. Cross-correlation or max-likelihood fitting with a perfect spectral template works much better. Talk a little bit about why.
+
+\section{Dependence of RV Precision on Template Choice}
+
+how well does the mask/template approximate the real data? try fudging the relative line depths and locations in both the binary mask and the template.
+
+is this where we bring in the data-driven template and demonstrate how well it performs?
 
 \section{Correlated Noise Sources and Their Consequences}
 
@@ -91,7 +103,7 @@ additional noise considerations:
 
 how do our results compare to the reality of the situation? (will this tell us anything other than ``real spectra are more complicated and our template is silly''?)
 
-\section{Discussion}
+%\section{Discussion}
 
 \section{Conclusions}
 

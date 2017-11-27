@@ -77,6 +77,34 @@ if __name__ == "__main__":
         #true_rvs = (s.rv - 54.9) * 1.e3 
         drift = s.drift # m/s
         dx = 0.01 # A
+        xs = np.arange(4998.0, 5002.0, dx)
+        N = len(s.files)  # number of epochs
+        M = len(xs)
+        data = np.empty((N, M))
+        ivars = np.empty_like(data)
+        for n,(f,b,snr) in enumerate(zip(s.files, s.berv, s.snr)):
+            # read in the spectrum
+            spec_file = str.replace(f, 'ccf_G2', 's1d')
+            wave, spec = read_harps.read_spec(spec_file)
+            # re-introduce barycentric velocity
+            wave *= doppler(b*1.e3)
+            # remove systemic RV shift so we're looking at the same lines as example
+            wave *= doppler(54.9 * 1.e3)
+            # save the relevant bit
+            f = interp1d(wave, spec)
+            data[n,:] = f(xs)
+            ivars[n,:] = snr**2
+            
+        p0 = None # starting guess for continuum normalization
+        iterate = 1
+        plotprefix = 'harpsdata'
+    
+    if False:
+        # grab a tellurics section from s1d files
+        true_rvs = ( -s.berv + s.rv - 54.9) * 1.e3  # m/s
+        #true_rvs = (s.rv - 54.9) * 1.e3 
+        drift = s.drift # m/s
+        dx = 0.01 # A
         #xs = np.arange(4998.0, 5002.0, dx)
         xs = np.arange(5910.0, 5925.0, dx) # tellurics region
         N = len(s.files)  # number of epochs
@@ -182,7 +210,7 @@ if __name__ == "__main__":
     template_xs, template_ys = make_template(data, true_rvs, xs, dx, plot=True, 
                     plotname=plotprefix+'_perfecttemplate.png')
                     
-    if True:
+    if False:
         # tellurics experiment
         
         # adopt CRLB from fake data experiment
@@ -295,7 +323,7 @@ if __name__ == "__main__":
            
 
                     
-    if False: 
+    if True: 
         # try to get RVs
         
         # adopt CRLB from fake data experiment
