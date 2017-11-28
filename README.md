@@ -2,7 +2,7 @@
 How do you measure a radial velocity, *extremely* precisely?
 
 ## Authors:
-- **Megan Bedell** (Chicago)
+- **Megan Bedell** (Flatiron) (Chicago)
 - **David W. Hogg** (NYU) (Flatiron) (MPIA)
 
 ## License:
