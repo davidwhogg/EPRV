@@ -16,6 +16,7 @@
 \newcommand{\HARPS}{\project{\acronym{HARPS}}}
 \newcommand{\RV}{\acronym{RV}}
 \newcommand{\CRLB}{\acronym{CRLB}}
+\newcommand{\EPRV}{\acronym{EPRV}}
 
 \begin{document}
 \graphicspath{ {figures/} }
@@ -64,6 +65,44 @@ We additionally assume that the data are extremely well wavelength-calibrated. I
 \section{Information Theory}
 \label{s:info}
 
+Given finite, noisy data, there are limits coming from information
+theory on how well any parameter of interest can be measured.
+The most straightforward bound is the Cram\'er--Rao Lower Bound (\CRLB) on the
+variance of any unbiased frequentist estimator.
+Estimators can only beat this bound by taking on bias.
+
+The \CRLB\ is related to the Fisher Information that is frequently
+used in cosmological experiment forecasts.
+
+
+This bound is strong, but it cannot be calculated \emph{objectively};
+any description of the information in a data set requires
+subjective decisions (that is, debatable decisions), which are inputs
+to a model for the generation of the data.
+In particular, information-theory bounds require a model for the
+probability of the data given the parameter of interest; that is, they
+require a likelihood function.
+(Side note: Bayesians need a likelihood function for inference, and
+frequentists need a likelihood function for analyzing their estimators.
+The likelihood function is central to all statistical methods.)
+
+In the case of \EPRV, this says that it is impossible to compute the
+CRLB without making assumptions about the stellar spectrum (the
+latent, unobserved, \emph{true} spectrum that could only be observed
+with arbitrarily good data) and the noise processes that distort the
+spectrum in any finite, noisy observation.
+
+These noise processes necessarily must include any beliefs about
+unsubtracted telluric absorptions or emissions, and time variability
+of the star itself, not to mention photon and spectrograph read and
+extraction noise.
+
+
+
+The issue with
+
+
+
 \begin{itemize}
 \item the Cramer-Rao bound is the limit on measurement
 \item it relates to Fisher information
@@ -73,7 +112,7 @@ We additionally assume that the data are extremely well wavelength-calibrated. I
 \end{itemize}
 
 \begin{itemize}
-\item what is the Cramer-Rao bound on a spectrum?
+\item what is the Cramer-Rao bound on a spectrum? See notes in Hogg's red book for 2017-12-01.
 \item Butler equation
 \item Bouchy equation
 \item Figueira (or Lovis \& Fischer) equation
@@ -123,7 +162,6 @@ FIGURE showing multi-line artificial data
 munging notes
 
 FIGURE showing analogous section of real data
-
 
 \section{Experiments}
 
