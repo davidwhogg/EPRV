@@ -10,13 +10,14 @@
 \newcommand{\s}{\unit{s}}
 \newcommand{\kms}{\km\,\s^{-1}}
 \newcommand{\ms}{\m\,\s^{-1}}
-\newcommand\todo[1]{\textcolor{red}{#1}}  % gotta have \usepackage{xcolor} in main doc or this won't work
+\newcommand{\todo}[1]{\textcolor{red}{#1}}  % gotta have \usepackage{xcolor} in main doc or this won't work
 \newcommand{\acronym}[1]{{\small{#1}}}
 \newcommand{\project}[1]{\textsl{#1}}
 \newcommand{\HARPS}{\project{\acronym{HARPS}}}
 \newcommand{\RV}{\acronym{RV}}
 \newcommand{\CRLB}{\acronym{CRLB}}
 \newcommand{\EPRV}{\acronym{EPRV}}
+\newcommand{\dd}{\mathrm{d}}
 
 \begin{document}
 \graphicspath{ {figures/} }
@@ -90,11 +91,10 @@ In particular, the \CRLB\ is related to the Fisher Information that is
 frequently used in cosmological experiment forecasts (\todo{CITE
   SHIT}).
 It is that the \emph{inverse variance} $\sigma_v^{-2}$ of any velocity
-estimator must be larger than the second derivative of the
-\emph{negative} log likelihood function.
-In equations:
+estimator must be smaller than the second derivative of the
+\emph{negative} log likelihood function:
 \begin{eqnarray}
-\frac{1}{\sigma_v^2} &\geq& \frac{d^2}{d_v^2}(-\ln L)
+\frac{1}{\sigma_v^2} &\geq& \frac{\dd^2}{\dd v^2}(-\ln L)
 \end{eqnarray}
 
 In the case of \EPRV, this says that any computation of the limits
