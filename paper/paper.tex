@@ -71,10 +71,6 @@ The most straightforward bound is the Cram\'er--Rao Lower Bound (\CRLB) on the
 variance of any unbiased frequentist estimator.
 Estimators can only beat this bound by taking on bias.
 
-The \CRLB\ is related to the Fisher Information that is frequently
-used in cosmological experiment forecasts.
-
-
 This bound is strong, but it cannot be calculated \emph{objectively};
 any description of the information in a data set requires
 subjective decisions (that is, debatable decisions), which are inputs
@@ -86,22 +82,38 @@ require a likelihood function.
 frequentists need a likelihood function for analyzing their estimators.
 The likelihood function is central to all statistical methods.)
 
-In the case of \EPRV, this says that it is impossible to compute the
-CRLB without making assumptions about the stellar spectrum (the
+In particular, the \CRLB\ is related to the Fisher Information that is
+frequently used in cosmological experiment forecasts (\todo{CITE
+  SHIT}).
+It is that the \emph{inverse variance} $\sigma_v^{-2}$ of any velocity
+estimator must be larger than the second derivative of the
+\emph{negative} log likelihood function.
+In equations:
+\begin{eqnarray}
+\frac{1}{\sigma_v^2} &\geq& \frac{d^2}{d_v^2}(-\ln L)
+\end{eqnarray}
+
+In the case of \EPRV, this says that any computation of the limits
+on estimating stellar velocities (or stellar velocity changes)
+require making assumptions about the stellar spectrum (the
 latent, unobserved, \emph{true} spectrum that could only be observed
 with arbitrarily good data) and the noise processes that distort the
 spectrum in any finite, noisy observation.
-
-These noise processes necessarily must include any beliefs about
+These noise processes ought (in principle) to include any beliefs about
 unsubtracted telluric absorptions or emissions, and time variability
 of the star itself, not to mention photon and spectrograph read and
 extraction noise.
+However---and in keeping with the literature---we can make maximal or
+best-case assumptions, and ask what we would get for \EPRV\ precision
+in that best case.
+Then we can ask (with fake data) how much different choices about our
+data analysis, and different adversarial injections of noise,
+tellurics, spectrograph issues, and other wrongness can prevent us
+from achieving the best-case bounds.
 
-
-
-The issue with
-
-
+The most optimistic assumptions are... Gaussian... No
+tellurics... perfect calibration... no time dependence... all
+variances known...
 
 \begin{itemize}
 \item the Cramer-Rao bound is the limit on measurement
