@@ -4,12 +4,19 @@
 \usepackage[sort&compress]{natbib}
 \usepackage[hang,flushmargin]{footmisc}
 
+% units macros
 \newcommand{\unit}[1]{\mathrm{#1}}
 \newcommand{\km}{\unit{km}}
 \newcommand{\m}{\unit{m}}
 \newcommand{\s}{\unit{s}}
 \newcommand{\kms}{\km\,\s^{-1}}
 \newcommand{\ms}{\m\,\s^{-1}}
+
+% math macros
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\T}{^{\mathsf{T}}}
+
+% text macros
 \newcommand{\todo}[1]{\textcolor{red}{#1}}  % gotta have \usepackage{xcolor} in main doc or this won't work
 \newcommand{\acronym}[1]{{\small{#1}}}
 \newcommand{\project}[1]{\textsl{#1}}
@@ -17,8 +24,8 @@
 \newcommand{\RV}{\acronym{RV}}
 \newcommand{\CRLB}{\acronym{CRLB}}
 \newcommand{\EPRV}{\acronym{EPRV}}
-\newcommand{\dd}{\mathrm{d}}
 
+\setlength{\parindent}{1.4em}
 \shorttitle{achieving maximum radial-velocity precision}
 \shortauthors{bedell and hogg}
 
@@ -87,10 +94,12 @@ We additionally assume that the data are extremely well wavelength-calibrated. I
 \section{Information Theory}
 \label{s:info}
 
-Given finite, noisy data, there are limits coming from information
+Given finite, noisy data, there is a limit coming from information
 theory on how well any parameter of interest can be measured.
-The most straightforward bound is the Cram\'er--Rao Lower Bound (\CRLB) on the
-variance of any unbiased frequentist estimator.
+This limit is
+sometimes known as the Cram\'er--Rao Lower Bound (\CRLB; \todo{cite CR and wikipedia}).
+In its simplest form, it constrains the variance of any unbiased
+frequentist estimator.
 Estimators can only beat this bound by taking on bias.
 
 This bound is strong, but it cannot be calculated \emph{objectively};
@@ -100,23 +109,42 @@ to a model for the generation of the data.
 In particular, information-theory bounds require a model for the
 probability of the data given the parameter of interest; that is, they
 require a likelihood function.
-(Side note: Bayesians need a likelihood function for inference, and
+As an aside: Bayesians need a likelihood function for inference, and
 frequentists need a likelihood function for analyzing their estimators.
-The likelihood function is central to all statistical methods.)
+The likelihood function is therefore central to all statistical methods,
+and the core component of any data analysis.
 
 In particular, the \CRLB\ is related to the Fisher Information that is
 frequently used in cosmological experiment forecasts (\todo{CITE
   SHIT}).
 It is that the \emph{inverse variance} $\sigma_v^{-2}$ of any velocity
-estimator must be smaller than the second derivative of the
-\emph{negative} log likelihood function:
-\begin{eqnarray}
-\frac{1}{\sigma_v^2} &\geq& \frac{\dd^2}{\dd v^2}(-\ln L)
-\end{eqnarray}
+estimator (that is, the information in the velocity) must be smaller than the
+second derivative of the \emph{negative} log likelihood function:
+\begin{equation}
+\frac{1}{\sigma_v^2} \leq E\left[\frac{\dd^2}{\dd v^2}(-\ln L)\right] \quad,
+\end{equation}
+where $L$ is the likelihood, or the probability of the data given the velocity,
+and the expectation $E[]$ is taken over all possible data (that is, it is an
+expectation under the likelihood).
+If there are many other nuisance parameters, a Bayesian can marginalize them
+out to make $L$ the marginalized likelihood for the velocity, or a frequentist
+can include them in the estimation and compute an inverse covariance matrix $C^{-1}$
+for the full parameter vector, which will have the bound
+\begin{equation}
+v^T\cdot C^{-1}\cdot v \leq v^T\cdot Q\cdot v
+\end{equation}
+\begin{equation}
+Q_{ij} \equiv E\left[\frac{\dd^2}{\dd\theta_i\,\dd\theta_j}(-\ln L)\right] \quad,
+\end{equation}
+where $Q$ is the information tensor, $i,j$ are indices into that
+tensor, corresponding parameters are $\theta_i, \theta_j$, and $v$ is
+any arbitrary vector.  That is, the bound is not just on every
+parameter, but really on on any combination of parameters.
 
 In the case of \EPRV, this says that any computation of the limits
 on estimating stellar velocities (or stellar velocity changes)
-require making assumptions about the stellar spectrum (the
+requires a likelihood function.
+This, in turn, requires making assumptions about the stellar spectrum (the
 latent, unobserved, \emph{true} spectrum that could only be observed
 with arbitrarily good data) and the noise processes that distort the
 spectrum in any finite, noisy observation.
@@ -137,18 +165,12 @@ tellurics... perfect calibration... no time dependence... all
 variances known...
 
 \begin{itemize}
-\item the Cramer-Rao bound is the limit on measurement
-\item it relates to Fisher information
-\item it cannot be computed without a model
+\item what is the Cramer-Rao bound on a spectrum in optimistic case? 
 \item CRLB is saturated with a maximum likelihood estimator under the correct model
 \item wrong spectrum template = wrong and noisy \RV s
-\end{itemize}
-
-\begin{itemize}
-\item what is the Cramer-Rao bound on a spectrum? See notes in Hogg's red book for 2017-12-01.
-\item Butler equation
+\item Butler equation \todo{See notes in Hogg's red book for 2017-12-01.}
 \item Bouchy equation
-\item Figueira (or Lovis \& Fischer) equation
+\item Figueira (or Lovis \& Fischer)
 \end{itemize}
 
 In conclusion: the saturate the CRLB, we need to construct a very accurate spectral template, an accurate tellurics template, and maximize the likelihood. Given that theory sucks, this probably means data-driven.
