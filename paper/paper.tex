@@ -160,20 +160,61 @@ data analysis, and different adversarial injections of noise,
 tellurics, spectrograph issues, and other wrongness can prevent us
 from achieving the best-case bounds.
 
-The most optimistic assumptions are... Gaussian... No
-tellurics... perfect calibration... no time dependence... all
-variances known...
-
+The most optimistic assumptions we can possibly make are the following.
 \begin{itemize}
-\item what is the Cramer-Rao bound on a spectrum in optimistic case? 
-\item CRLB is saturated with a maximum likelihood estimator under the correct model
-\item wrong spectrum template = wrong and noisy \RV s
+\item The spectrograph is perfectly calibrated in a wavelength sense.
+\item The spectrograph is consistently and repeatably calibrated in a
+  flux sense. That is, the spectrum does not need to be perfectly
+  continuum-normalized or perfectly flux-normalized, but it is
+  calibrated near-perfectly consistently across epochs (exposures).
+\item There are no residual telluric absorptions nor any residual sky
+  emission in the spectra. That is, the sky is near-perfectly calibrated
+  and removed.
+\item There is no time dependence (no epoch-to-epoch variations) in the
+  stellar spectrum.
+\item The \emph{true} spectrum (that is, the latent spectrum that
+  would be observed if the data were far, far better) of the star is
+  known at better accuracy and precision than the main noise sources.
+\item All noise sources contributing to the spectral data---which
+  include at a minimum photon noise, read noise, residual telluric
+  issues, residual wavelength-calibration issues, and residual stellar
+  spectral variability---are, when summed together, indistinguishable
+  from being zero-mean, Gaussian, and additive.
+\item The complete variance tensor of the total noise on the spectrum is known, and
+  known correctly. That is, the variance of the noise at every pixel
+  is known, as is the covariance between nearby pixels, and in the
+  same \emph{true} sense that the true spectrum of the star is known.
+\end{itemize}
+It is worthy of note that every formula (that we know) in the
+literature for maximum \RV\ precision (\todo{cite Butler, Bouchy,
+  Figueira, Lovis}) makes these same assumptions, plus additional \emph{even
+more restrictive assumptions}.
+Under these disturbingly unrealistic assumptions, the \CRLB\ becomes
+\begin{equation}
+\frac{1}{\sigma_v^2} \leq \left[\frac{\dd f}{\dd v}\right]\T\cdot C^{-1}\cdot\left[\frac{\dd f}{\dd v}\right]
+\end{equation}
+where the derivatives are of the true spectrum with respect to
+velocity (which can be thought of as the derivative of a Doppler
+operator with respect to velocity acting on the true spectrum), the
+derivatives are column vectors, and $C^{-1}$ is the covariance matrix
+describing the true variance and covariances of the noise process.
+
+...Now speak to the more restrictive assumptions others have made but
+say that we agree in the end.
+\begin{itemize}
 \item Butler equation \todo{See notes in Hogg's red book for 2017-12-01.}
 \item Bouchy equation
 \item Figueira (or Lovis \& Fischer)
 \end{itemize}
 
-In conclusion: the saturate the CRLB, we need to construct a very accurate spectral template, an accurate tellurics template, and maximize the likelihood. Given that theory sucks, this probably means data-driven.
+... Now note that the \CRLB\ is saturated with a maximum likelihood estimator under the correct model.
+
+... Now note that using a wrong spectrum template will necessarily move you away from the bound. Bad!
+
+In conclusion: the saturate the CRLB, we need to construct a very
+accurate spectral template, an accurate tellurics template, and
+maximize the likelihood. Given that theory sucks, this probably means
+data-driven.
 
 \section{Overview of Methods}
 \label{s:methods}
