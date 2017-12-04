@@ -25,11 +25,11 @@
 \newcommand{\CRLB}{\acronym{CRLB}}
 \newcommand{\EPRV}{\acronym{EPRV}}
 
-\setlength{\parindent}{1.4em}
+\setlength{\parindent}{1.4em} % trust in Hogg
 \shorttitle{achieving maximum radial-velocity precision}
 \shortauthors{bedell and hogg}
 
-\begin{document}
+\begin{document}\sloppy\sloppypar\raggedbottom\frenchspacing % trust in Hogg
 \graphicspath{ {figures/} }
 \DeclareGraphicsExtensions{.pdf,.eps,.png}
 
@@ -75,12 +75,12 @@ planets and satellites: detection
 
 \section{Introduction}
 
-Accurate spectroscopic measurements of radial velocities (\RV s) have long been a critical tool across many subfields of astronomy, from galactic dynamics to cosmic expansion. 
-In recent decades, however, a new focus has emerged on \textit{extremely precise} \RV\ measurements of stars as a means of detecting exoplanets. 
-For this application, measuring the absolute velocity of the star is much less important than resolving its changes through time. 
-With sub-$\ms$-level precision required for the detection of Earth-like planets, vast amounts of effort have been poured into the engineering challenges of constructing a sufficiently stable spectrograph (or, failing that, being able to track the drift of a spectrograph over time) \todo{(cite some review papers)}. 
-At the same time, great strides have been made towards disentangling true Doppler shifts from imitative signals like the spectral signatures of stellar pulsations and magnetic activity features \todo{(cite some review papers)}.  
-In this work, we investigate another fundamentally important but less commonly discussed aspect of the quest for maximum-precision \RV s: the method of analysis used to extract the \RV\ from a stellar spectrum.
+
+Accurate spectroscopic measurements of radial velocities (\RV s) have long been a critical tool across many subfields of astronomy, from Galactic dynamics to large-scale structure and cosmic expansion.
+Fundamentally, accuracy of radial-velocity mesurement is limited by the quality of spectral models of stars, or templates.
+In recent decades, however, a new focus has emerged on \emph{extremely precise} but purely \emph{relative} \RV\ measurements of stars as a means of detecting exoplanets and other kinds of companions.
+For this application, measuring the absolute velocity of the star is much less important than resolving changes through time.
+With sub-$\ms$-level precision required for the detection of Earth-like planets, vast amounts of effort have been poured into the engineering challenges of constructing a sufficiently stable spectrograph (or, failing that, being able to track the drift of a spectrograph over time) \todo{(cite some review papers)}. At the same time, great strides have been made towards disentangling true Doppler shifts from imitative signals like the spectral signatures of stellar pulsations and magnetic activity features \todo{(cite some review papers)}.  In this work, we investigate another fundamentally important but less commonly discussed aspect of the quest for maximum-precision \RV s: the method of analysis used to estimate the \RV\ given an extracted stellar spectrum.
 
 While the general idea of measuring a Doppler shift by the relative motions of stellar absorption lines is fairly straightforward, there are considerable subtleties to implementing this, from the choice of reference spectrum or template to the treatment of telluric absorption features. Ultra-stabilized spectrographs like HARPS \todo{(define \& cite)} predominantly utilize a cross-correlation method with a custom-built list of spectral lines (see e.g. Queloz1995, Baranne1996). 
 A lesser-used alternative is cross-correlation or maximum-likelihood fitting using a template spectrum generated from the data (Buchhave, Anglada-Escude). 
@@ -184,7 +184,7 @@ The most optimistic assumptions we can possibly make are the following.
 \item The spectrograph is consistently and repeatably calibrated in a
   flux sense. That is, the spectrum does not need to be perfectly
   continuum-normalized or perfectly flux-normalized, but it is
-  calibrated near-perfectly consistently across epochs (exposures).
+  calibrated near-perfectly \emph{consistently} across epochs (exposures).
 \item There are no residual telluric absorptions nor any residual sky
   emission in the spectra. That is, the sky is near-perfectly calibrated
   and removed.
@@ -208,7 +208,7 @@ literature for maximum \RV\ precision (\todo{cite Butler, Bouchy,
   Figueira, Lovis}) makes these same assumptions, plus additional \emph{even
 more restrictive assumptions}.
 Under these disturbingly unrealistic assumptions, the \CRLB\ becomes
-\begin{equation}
+\begin{equation}\label{eq:crlb}
 \frac{1}{\sigma_v^2} \leq \left[\frac{\dd f}{\dd v}\right]\T\cdot C^{-1}\cdot\left[\frac{\dd f}{\dd v}\right]
 \end{equation}
 where the derivatives are of the true spectrum with respect to
@@ -217,22 +217,50 @@ operator with respect to velocity acting on the true spectrum), the
 derivatives are column vectors, and $C^{-1}$ is the inverse of the covariance matrix
 describing the true variance and covariances of the noise process.
 
-...Now speak to the more restrictive assumptions others have made but
-say that we agree in the end.
-\begin{itemize}
-\item Butler equation \todo{See notes in Hogg's red book for 2017-12-01.}
-\item Bouchy equation
-\item Figueira (or Lovis \& Fischer)
-\end{itemize}
+Formulae (bounds) related to (\ref{eq:crlb}) have appeared previously
+in the literature, although in somewhat more complicated forms.
+Butler (\todo{cite}) shows a similar expression, but makes the additional
+assumption that every pixel is independent; that is, that there is no
+covariance between nearby pixels from, say, extraction or continuum normalization.
+Bouchy (\todo{cite}) shows an expression that assumes that the pixels
+are independent and that the noise is dominated by a combination of photon
+and read noise. 
+That work also replaces the model spectrum with a set of optimal
+weights for cross-correlation, which amounts to very much the same thing.
+Figueira (\todo{cite}) and \todo{others (cite)} show a per-line
+bound, based on assumptions similar to those of Bouchy but with the additional assumption that
+each line is well approximated by a Gaussian (squared exponential) in shape.
+These literature bounds are all extremely similar; nothing here is controversial.
 
-... Now note that the \CRLB\ is saturated with a maximum likelihood estimator under the correct model.
+Now that we have established the bound, how can we saturate it? That is,
+how can we make measurements (estimators)  with variances that come close to the \CRLB?
+The short answer is that reliable bound-saturating estimators are maximum-likelihood estimators.
+The long answer is long, but part of it is that the bound can only be saturated if the
+assumptions are correct, and note that the assumptions include that we know the
+\emph{true} spectrum of the star, among many other things.
+That is, if we can take data that come close to meeting the assumptions, and
+if we can find a spectral model that comes close to the true spectrum of the star,
+then in principle we can estimate radial velocities with a precision close to the \CRLB.
 
-... Now note that using a wrong spectrum template will necessarily move you away from the bound. Bad!
+Given that computational stellar spectral models have physical issues, the best way
+to get an accurate estimate of the true spectrum of the star is going to be data-driven.
+In what follows, we are going to show that---for a typical \HARPS-like observing program---%
+it is possible to build a data-driven model of the stellar spectrum that is good enough
+to nearly-saturate the \CRLB.
+That is, with a data-driven model of the true stellar spectrum, model inaccuracy will
+not dominate the \RV\ noise budget.
+We will additionally bring evidence that telluric features can be a significant problem,
+but that they also can plausibly be mitigated with a data-driven model.
 
-In conclusion: the saturate the CRLB, we need to construct a very
-accurate spectral template, an accurate tellurics template, and
-maximize the likelihood. Given that theory sucks, this probably means
-data-driven.
+One final comment:
+We are forced to perform these experiments primarily with artificial data.
+The reason is: In order to assess the performance with respect to latent, unobservable \emph{truth},
+we require knowledge of that latent, unobservable truth.
+When we make artificial data, we play the r\^ole of God.
+We will also show tests on two real stars, one hosting a companion and
+one (apparently) companion-free (at least at our precision), but these
+tests will necessarily only be confirmatory of the more stringent results
+from artificial data.
 
 \section{Overview of Methods}
 \label{s:methods}
