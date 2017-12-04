@@ -25,11 +25,11 @@
 \newcommand{\CRLB}{\acronym{CRLB}}
 \newcommand{\EPRV}{\acronym{EPRV}}
 
-\setlength{\parindent}{1.4em}
+\setlength{\parindent}{1.4em} % trust in Hogg
 \shorttitle{achieving maximum radial-velocity precision}
 \shortauthors{bedell and hogg}
 
-\begin{document}
+\begin{document}\sloppy\sloppypar\raggedbottom\frenchspacing % trust in Hogg
 \graphicspath{ {figures/} }
 \DeclareGraphicsExtensions{.pdf,.eps,.png}
 
@@ -170,7 +170,7 @@ The most optimistic assumptions we can possibly make are the following.
 \item The spectrograph is consistently and repeatably calibrated in a
   flux sense. That is, the spectrum does not need to be perfectly
   continuum-normalized or perfectly flux-normalized, but it is
-  calibrated near-perfectly consistently across epochs (exposures).
+  calibrated near-perfectly \emph{consistently} across epochs (exposures).
 \item There are no residual telluric absorptions nor any residual sky
   emission in the spectra. That is, the sky is near-perfectly calibrated
   and removed.
@@ -244,7 +244,9 @@ The reason is: In order to assess the performance with respect to latent, unobse
 we require knowledge of that latent, unobservable truth.
 When we make artificial data, we play the r\^ole of God.
 We will also show tests on two real stars, one hosting a companion and
-one (apparently) companion-free (at least at our precision).
+one (apparently) companion-free (at least at our precision), but these
+tests will necessarily only be confirmatory of the more stringent results
+from artificial data.
 
 \section{Overview of Methods}
 \label{s:methods}
