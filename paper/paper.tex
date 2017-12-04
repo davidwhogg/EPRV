@@ -252,16 +252,6 @@ not dominate the \RV\ noise budget.
 We will additionally bring evidence that telluric features can be a significant problem,
 but that they also can plausibly be mitigated with a data-driven model.
 
-One final comment:
-We are forced to perform these experiments primarily with artificial data.
-The reason is: In order to assess the performance with respect to latent, unobservable \emph{truth},
-we require knowledge of that latent, unobservable truth.
-When we make artificial data, we play the r\^ole of God.
-We will also show tests on two real stars, one hosting a companion and
-one (apparently) companion-free (at least at our precision), but these
-tests will necessarily only be confirmatory of the more stringent results
-from artificial data.
-
 \section{Overview of Methods}
 \label{s:methods}
 
@@ -288,28 +278,41 @@ discuss quadratic max procedure to get a fine-grained maximum from a coarse-grai
 \section{Data}
 \label{s:data}
 
-Most of what we do in this paper uses artificial data because we need access to the truth in order to compute the theoretical information content of the data. As a final test, we do use real data as a demonstration that the methods presented here are useful when applied to real data and the assumptions made in our artificial data generation are realistic.
+The experiments we perform in this paper primarily use artificial data, for the simple reason that we require access to the underlying true RVs in order to assess the performance of our methods. 
+We attempt to generate the fake data as realistically as possible for the case of a high-resolution, high-signal-to-noise spectrum of a Sun-like star taken with \HARPS. 
+With these data, we are able to compute the \CRLB\. 
+We can also isolate the effects of various confounding noise sources like telluric features and imperfect continuum normalization by injecting them into the artificial data, which is generated free of correlated noise by default.
+
+We will also show tests on real \HARPS\ data for two stars, one hosting a companion and
+one (apparently) companion-free (at least at our precision). 
+These tests serve as a demonstration that the methods presented here are useful when applied to real data and the assumptions made in our artificial data generation are realistic.
 
 \subsection{Artificial Data}
 
-The basic model that we use to generate fake spectra is extremely simple, assuming a perfectly normalized continuum; isolated, perfectly Gaussian spectral lines; and white noise only. We simulated a 5-$\AA$ region with random noise corresponding to an SNR of 100, a typical value for a single \RV\ spectrum. Lines were inserted as Gaussians with arbitrarily-prescribed centers and depths (or equivalent widths). Every line was convolved with the same line spread function, which was taken to be a Gaussian with $\sigma$ = 0.05 $\AA$. %The number of lines used varies in the results discussed below.
+The basic model that we use to generate fake spectra is extremely simple, assuming a perfectly normalized continuum; isolated, perfectly Gaussian spectral lines; and white noise only. 
+We simulated a 5-$\AA$ region with random noise corresponding to an SNR of 100, a typical value for a single \RV\ spectrum. 
+Lines were inserted as Gaussians with prescribed centers, widths, and depths. 
+Every line was convolved with the same line spread function, which was taken to be a Gaussian with $\sigma$ = 0.05 $\AA$. 
+In the simplest test case, an arbitrary single line at 5000 $\AA$ was used (see Section \ref{s:singleline}). 
+However, for most of our tests we injected a set of 12 lines with centers between 4998 - 5002 $\AA$. 
+The Gaussian parameters for these lines were based on fits to a reflected Solar spectrum from Vesta taken by \HARPS. \todo{(find citation/program number)} 
+The resulting spectrum strongly resembles a 5-$\AA$ chunk taken from a typical \HARPS\ spectrum of a Sun-like star (Figure \ref{fig:spectra}).
 
-We repeated this synthesis to make a set of \todo{64} spectra, each with a random \RV\ between $-30$ and $30\,\kms$ (the approximate amplitude of the yearly \RV\ shifts induced by barycentric motion). The \RV s can be applied as a straightforward Doppler shift in the centers of each line. \todo{(add equation?)} At this point, we are able to run a cross-correlation or a maximum-likelihood analysis on the set of spectra and examine the deviations in the recovered \RV s from the input \RV s.
-
-discuss single-line and multi-line cases
-
-FIGURE showing multi-line artificial data
+We repeated this synthesis to make a set of \todo{64} spectra, each with a random \RV\ between $-30$ and $30\,\kms$ (the approximate amplitude of the yearly \RV\ shifts induced by barycentric motion). 
+The \RV s were applied as a multiplicative Doppler shift on the central wavelength of each spectral line to be injected. 
+At this point, we are able to run a cross-correlation analysis on the set of spectra and examine the deviations in the recovered \RV s from the input \RV s.
 
 \subsection{HARPS Data}
 
 munging notes
 
-FIGURE showing analogous section of real data
+reference to figure comparing real \& fake data
 
 \section{Experiments}
 \label{s:experiments}
 
 \subsection{Single-Line}
+\label{s:singleline}
 
 We began with the simplest test case possible: a single, strong absorption feature.
 
