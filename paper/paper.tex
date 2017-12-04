@@ -11,6 +11,8 @@
 \newcommand{\s}{\unit{s}}
 \newcommand{\kms}{\km\,\s^{-1}}
 \newcommand{\ms}{\m\,\s^{-1}}
+\newcommand{\ang}{\text{\normalfont\AA}}
+
 
 % math macros
 \newcommand{\dd}{\mathrm{d}}
@@ -82,7 +84,7 @@ In recent decades, however, a new focus has emerged on \emph{extremely precise} 
 For this application, measuring the absolute velocity of the star is much less important than resolving changes through time.
 With sub-$\ms$-level precision required for the detection of Earth-like planets, vast amounts of effort have been poured into the engineering challenges of constructing a sufficiently stable spectrograph (or, failing that, being able to track the drift of a spectrograph over time) \todo{(cite some review papers)}. At the same time, great strides have been made towards disentangling true Doppler shifts from imitative signals like the spectral signatures of stellar pulsations and magnetic activity features \todo{(cite some review papers)}.  In this work, we investigate another fundamentally important but less commonly discussed aspect of the quest for maximum-precision \RV s: the method of analysis used to estimate the \RV\ given an extracted stellar spectrum.
 
-While the general idea of measuring a Doppler shift by the relative motions of stellar absorption lines is fairly straightforward, there are considerable subtleties to implementing this, from the choice of reference spectrum or template to the treatment of telluric absorption features. Ultra-stabilized spectrographs like HARPS \todo{(define \& cite)} predominantly utilize a cross-correlation method with a custom-built list of spectral lines (see e.g. Queloz1995, Baranne1996). 
+While the general idea of measuring a Doppler shift by the relative motions of stellar absorption lines is fairly straightforward, there are considerable subtleties to implementing this, from the choice of reference spectrum or template to the treatment of telluric absorption features. Ultra-stabilized spectrographs like \HARPS\ \todo{(define \& cite)} predominantly utilize a cross-correlation method with a custom-built list of spectral lines (see e.g. Queloz1995, Baranne1996). 
 A lesser-used alternative is cross-correlation or maximum-likelihood fitting using a template spectrum generated from the data (Buchhave, Anglada-Escude). 
 This often involves masking or downweighting of the most telluric-contaminated spectral regions.
 
@@ -91,20 +93,16 @@ In this framework, the instrumental line spread function, the stellar RV, and ot
 
 Our primary aim in this work is to establish a common frame of reference for these methods based on their relative ability to extract maximum-precision RVs and their robustness in the face of various expected structured noise sources.
 
-It is important to state at the outset the assumptions under which are operating for these experiments. 
-We assume that our data set consists of multiple observations of the same star with good coverage throughout the observing season, so that we have seen the star many times spanning the range of telluric-to-star relative RV shifts. 
+For the purposes of this work, we assume that our data set consists of multiple observations of the same star with good coverage throughout the observing season, so that we have seen the star many times spanning the range of telluric-to-star relative RV shifts. 
 This means we are not considering the case of a real-time data reduction pipeline. 
 We also assume a HARPS-like setup, i.e. no absorption cell, but the points we make can be easily generalized to the gas-cell case. 
 We return to this point in the discussion \todo{(do this)}.
 
-We additionally assume that the data are extremely well wavelength-calibrated. 
-In other work, we will discuss this, but our current belief is that current RV spectrographs are supremely well wavelength-calibrated.
-
-[any other assumptions?]
+%wavelength calibration assumption removed b/c it fits better in Section 2... but maybe we want to add it back?
 
 We begin in Section \ref{s:info} with a derivation of the information-theory-based limit on the RV information content of a spectrum. 
 In Section \ref{s:methods}, we summarize common RV extraction practices used by current \RV\ pipelines, including cross-correlation and template fitting. 
-We then implement these techniques to extract \RV s using 5-\r{A} section of simulated and real spectra, as described in Section \ref{s:data}. 
+We then implement these techniques to extract \RV s using 5-\ang-wide sections of simulated and real spectra, as described in Section \ref{s:data}. 
 We compare the relative performances of the methods in Section \ref{s:experiments} and conclude with some recommendations for future RV pipelines in Section \ref{s:summary}. 
 
 
@@ -290,19 +288,26 @@ These tests serve as a demonstration that the methods presented here are useful 
 \subsection{Artificial Data}
 
 The basic model that we use to generate fake spectra is extremely simple, assuming a perfectly normalized continuum; isolated, perfectly Gaussian spectral lines; and white noise only. 
-We simulated a 5-$\AA$ region with random noise corresponding to an SNR of 100, a typical value for a single \RV\ spectrum. 
+We simulated a 5-\ang\ region with random noise corresponding to an SNR of 100, a typical value for a single \RV\ spectrum. 
 Lines were inserted as Gaussians with prescribed centers, widths, and depths. 
-Every line was convolved with the same line spread function, which was taken to be a Gaussian with $\sigma$ = 0.05 $\AA$. 
-In the simplest test case, an arbitrary single line at 5000 $\AA$ was used (see Section \ref{s:singleline}). 
-However, for most of our tests we injected a set of 12 lines with centers between 4998 - 5002 $\AA$. 
+Every line was convolved with the same line spread function, which was taken to be a Gaussian with $\sigma$ = 0.05 \ang. 
+In the simplest test case, an arbitrary single line at 5000 \ang\ was used (see Section \ref{s:singleline}). 
+However, for most of our tests we injected a set of 12 lines with centers between 4998 - 5002 \ang. 
 The Gaussian parameters for these lines were based on fits to a reflected Solar spectrum from Vesta taken by \HARPS. \todo{(find citation/program number)} 
-The resulting spectrum strongly resembles a 5-$\AA$ chunk taken from a typical \HARPS\ spectrum of a Sun-like star (Figure \ref{fig:spectra}).
+The resulting spectrum strongly resembles a 5-\ang\ chunk taken from a typical \HARPS\ spectrum of a Sun-like star (Figure \ref{fig:spectra}).
 
 We repeated this synthesis to make a set of \todo{64} spectra, each with a random \RV\ between $-30$ and $30\,\kms$ (the approximate amplitude of the yearly \RV\ shifts induced by barycentric motion). 
 The \RV s were applied as a multiplicative Doppler shift on the central wavelength of each spectral line to be injected. 
 At this point, we are able to run a cross-correlation analysis on the set of spectra and examine the deviations in the recovered \RV s from the input \RV s.
 
-\subsection{HARPS Data}
+\begin{figure}
+\centering
+% \includegraphics[width=\columnwidth]{spectra}
+\caption{}
+\label{fig:spectra}
+\end{figure}
+
+\subsection{\HARPS\ Data}
 
 munging notes
 
@@ -348,9 +353,9 @@ additional noise considerations:
 \item additive signals?: for example sky emission, lunar and other reflected solar; we might skip this and just add to discussion
 \end{itemize}
 
-\subsection{HARPS Data}
+\subsection{Real Data}
 
-all the data-driven code works on real data. we get a better RMS on the star from the data-driven template than from the binary mask. based on this, we believe that the HARPS pipeline doesn't strictly use a binary mask.
+all the data-driven code works on real data. we get a better RMS on the star from the data-driven template than from the binary mask. based on this, we believe that the \HARPS\ pipeline doesn't strictly use a binary mask.
 
 \section{Summary \& Discussion}
 \label{s:summary}
@@ -364,7 +369,7 @@ limitations of our ``additional noise'' ideas and what we have considered.
 Hogg: insert some grand final statement.
 
 \acknowledgements
-MPIA hospitality, Montet, Foreman-Mackey, Bean, Stuermer, Rix, HARPS team, ESO, Stars group meeting, Brewer
+MPIA hospitality, Montet, Foreman-Mackey, Bean, Stuermer, Rix, \HARPS\ team, ESO, Stars group meeting, Brewer
 
 \bibliographystyle{apj}
 \bibliography{}%general,myref,inprep}
