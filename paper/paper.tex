@@ -253,18 +253,47 @@ but that they also can plausibly be mitigated with a data-driven model.
 \section{Overview of Methods}
 \label{s:methods}
 
-cross-correlation and max likelihood are the same: here's why. We are going to consider cross-correlation for simplicity in this paper.
+Most methods for radial-velocity estimation involve some kind of
+cross-correlation of the data with a template.
+This might be surprising, since (as we noted above) bound-saturating
+estimators will be maximum-likelihood estimators.
+However, under some simple assumptions, cross-correlation optima are
+also maximum-likelihood optima.
 
-for either of these, you could use:
+For example, when the likelihood is Gaussian, the log-likelihood
+contains a chi-squared-like term
+\begin{equation}
+-\frac{1}{2}\,[y - f]\T\cdot C^{-1}\cdot [y - f] \quad ,
+\end{equation}
+where $y$ is a column vector of the data, $f$ is the model spectrum,
+and $C$ is the covariance matrix describing the noise variance.
+In the case of independent pixel noise this just becomes an
+inverse-variance weighted sum of squared residuals (chi-squared).
+If we expand this quadratic form, it becomes
+\begin{equation}
+-\frac{1}{2}\,[y - f]\T\cdot C^{-1}\cdot [y - f] = -\frac{1}{2}\,y\T\cdot C^{-1}\cdot y + y^T\cdot C^{-1}\cdot f 
+                                                   -\frac{1}{2}\,f\T\cdot C^{-1}\cdot f \quad.
+\end{equation}
+That is, the chi-squared term factors into a term that is the square
+of the model, a term that is the square of the data, and a term that
+is a cross-correlation.
+As long as the amplitude of $f$ doesn't depend on velocity, and the
+$C$ tensor is ``smooth'' in certain respects, the dependence of this
+chi-squared term on velocity will be dominated by the
+cross-correlation.
+For this reason, we will use a variant of cross-correlation
+optimization as our radial-velocity estimator.
+
+...In detail, the cross-correlation we will optimize is...
+
+...For the cross-correlation template $f$ you could use...
 \begin{itemize}
 \item ``binary'' mask: reasons you might want to use this (automatically ignores tellurics, trivially computes average line profile), pipelines that use this \& how (quote HARPS papers)
 \item synthetic spectrum (i.e. a slightly wrong model prediction, since the stellar model will never be a perfect reproduction of the star in question): sub-tweet: some surveys cross-correlate with a single (same) template for every single star, which is extremely wrong. you can be more right by using a spectral-type-specific template.
 \item data-driven template spectrum: some surveys (HIRES) use a single observation as a template. combining information from many visits is better because the combined SNR is amazing.
 \end{itemize}
 
-
-discuss quadratic max procedure to get a fine-grained maximum from a coarse-grained cross-correlation grid
-
+....discuss quadratic max procedure to get a fine-grained maximum from a coarse-grained cross-correlation grid
 
 \begin{figure}
 \centering
