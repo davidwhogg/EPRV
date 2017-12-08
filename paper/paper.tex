@@ -22,6 +22,7 @@
 \newcommand{\acronym}[1]{{\small{#1}}}
 \newcommand{\project}[1]{\textsl{#1}}
 \newcommand{\HARPS}{\project{\acronym{HARPS}}}
+\newcommand{\HIRES}{\project{\acronym{HIRES}}}
 \newcommand{\RV}{\acronym{RV}}
 \newcommand{\CRLB}{\acronym{CRLB}}
 \newcommand{\EPRV}{\acronym{EPRV}}
@@ -87,14 +88,14 @@ While the general idea of measuring a Doppler shift by the relative motions of s
 A lesser-used alternative is cross-correlation or maximum-likelihood fitting using a template spectrum generated from the data (Buchhave, Anglada-Escude). 
 This often involves masking or downweighting of the most telluric-contaminated spectral regions.
 
-On the other hand, gas-cell-calibrated spectrographs like HIRES and [whatever the McDonald one is] commonly adopt a more comprehensive forward-modeling approach. 
+On the other hand, gas-cell-calibrated spectrographs like \HIRES\ commonly adopt a more comprehensive forward-modeling approach. 
 In this framework, the instrumental line spread function, the stellar RV, and other parameters are optimized by modeling each observation as a combination of shifted and instrument-convolved template spectra for the star and gas cell. [say a bit more]
 
 Our primary aim in this work is to establish a common frame of reference for these methods based on their relative ability to extract maximum-precision RVs and their robustness in the face of various expected structured noise sources.
 
 For the purposes of this work, we assume that our data set consists of multiple observations of the same star with good coverage throughout the observing season, so that we have seen the star many times spanning the range of telluric-to-star relative RV shifts. 
 This means we are not considering the case of a real-time data reduction pipeline. 
-We also assume a HARPS-like setup, i.e. no absorption cell, but the points we make can be easily generalized to the gas-cell case. 
+We also assume a \HARPS-like setup, i.e. no absorption cell, but the points we make can be easily generalized to the gas-cell case. 
 We return to this point in the discussion \todo{(do this)}.
 
 %wavelength calibration assumption removed b/c it fits better in Section 2... but maybe we want to add it back?
@@ -286,9 +287,9 @@ optimization as our radial-velocity estimator.
 
 ...In detail, the cross-correlation we will optimize is...
 
-...For the cross-correlation template $f$ you could use...
+A variety of choices exist for the cross-correlation template $f$. A few possibilities include:
 \begin{itemize}
-\item ``binary'' mask: reasons you might want to use this (automatically ignores tellurics, trivially computes average line profile), pipelines that use this \& how (quote HARPS papers)
+\item a ``binary'' mask, or a spectrum of zero value with non-zero peaks at the expected rest-frame wavelengths of the spectral lines of interest. A cross-correlation between this mask and the observed spectrum will effectively compute the average line profile with its minimum corresponding to the best-fit RV. This method has the benefit of trivially excluding telluric-contaminated or otherwise unreliable regions of the spectrum by deleting them from the mask. A desired relative weighting of lines can be incorporated by setting the non-zero mask values to different amplitudes at different lines (cite Pepe). This method is currently used by the \HARPS\ pipeline (cite).
 \item synthetic spectrum (i.e. a slightly wrong model prediction, since the stellar model will never be a perfect reproduction of the star in question): sub-tweet: some surveys cross-correlate with a single (same) template for every single star, which is extremely wrong. you can be more right by using a spectral-type-specific template.
 \item data-driven template spectrum: some surveys (HIRES) use a single observation as a template. combining information from many visits is better because the combined SNR is amazing.
 \end{itemize}
@@ -307,7 +308,7 @@ optimization as our radial-velocity estimator.
 
 The experiments we perform in this paper primarily use artificial data, for the simple reason that we require access to the underlying true RVs in order to assess the performance of our methods. 
 We attempt to generate the fake data as realistically as possible for the case of a high-resolution, high-signal-to-noise spectrum of a Sun-like star taken with \HARPS. 
-With these data, we are able to compute the \CRLB\. 
+With these data, we are able to compute the \CRLB.  
 We can also isolate the effects of various confounding noise sources like telluric features and imperfect continuum normalization by injecting them into the artificial data, which is generated free of correlated noise by default.
 
 We will also show tests on real \HARPS\ data for two stars, one hosting a companion and
