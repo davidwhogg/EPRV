@@ -25,7 +25,6 @@
 \newcommand{\HIRES}{\project{\acronym{HIRES}}}
 \newcommand{\RV}{\acronym{RV}}
 \newcommand{\CRLB}{\acronym{CRLB}}
-\newcommand{\EPRV}{\acronym{EPRV}}
 
 \setlength{\parindent}{1.4em} % trust in Hogg
 \shorttitle{achieving maximum radial-velocity precision}
@@ -156,7 +155,7 @@ tensor, corresponding parameters are $\theta_i, \theta_j$, and $v$ is
 any arbitrary vector.  That is, the bound is not just on every
 parameter, but really on on any combination of parameters.
 
-In the case of \EPRV, this says that any computation of the limits
+In the case of extreme-precision \RV, this says that any computation of the limits
 on estimating stellar velocities (or stellar velocity changes)
 requires a likelihood function.
 This, in turn, requires making assumptions about the stellar spectrum (the
@@ -168,7 +167,7 @@ unsubtracted telluric absorptions or emissions, and time variability
 of the star itself, not to mention photon and spectrograph read and
 extraction noise.
 However---and in keeping with the literature---we can make maximal or
-best-case assumptions, and ask what we would get for \EPRV\ precision
+best-case assumptions, and ask what we would get for \RV\ precision
 in that best case.
 Then we can ask (with fake data) how much different choices about our
 data analysis, and different adversarial injections of noise,
@@ -250,7 +249,7 @@ not dominate the \RV\ noise budget.
 We will additionally bring evidence that telluric features can be a significant problem,
 but that they also can plausibly be mitigated with a data-driven model.
 
-\section{Overview of Methods}
+\section{Radial-velocity estimators}
 \label{s:methods}
 
 Most methods for radial-velocity estimation involve some kind of
@@ -400,13 +399,47 @@ all the data-driven code works on real data. we get a better RMS on the star fro
 \section{Summary and discussion}
 \label{s:summary}
 
-paragraph for each major result from the abstract
+...paragraph for each major result from the abstract
 
-wrongness of our assumptions - how does this affect our conclusions?
+In \sectionname~\ref{s:information} we listed some exceedingly
+optimistic assumptions under which we could compute the
+information-theoretic limit on radial-velocity precision.
+Some of these assumptions are worthy of discussion: How true are they,
+and what happens, both from an information-theory perspective and from
+a methodological perspective, when we relax them?
 
-limitations of our ``additional noise'' ideas and what we have considered.
+One of these assumptions, for example, is that the true stellar
+spectrum is constant with time; that is, the variations from
+epoch-to-epoch are from noise or nuisances (like telluric absorption).
+This assumption is critical and deep.
+The entire edifice of extreme-precision \RV\ is built on this assumption:
+With imperfect models of stellar structure and photospheres, it is
+impossible to know the \emph{absolute} \RV\ of a star to high precision.
+The reason is that small issues with (say) convective line shifts or
+line-shapes, it is impossible to know precisely the true wavelength of
+a line centroid, unless the model is correct in an absolute sense.
+So we satisfy ourselves that we can measure \emph{relative} velocities
+to arbitrarily high precision:
+Relative precision---and everything in this paper---depends on our
+ability to measure shifts from epoch to epoch.
+If the stellar spectrum is permitted (or observed) to change from epoch
+to epoch, there is no fundamental way to determine or confirm spectral
+shifts corresponding to Doppler shifts.
+That is, even relative \RV\ measurements depend on a constancy of the
+stellar spectrum.
+This is a deep issue, extending far beyond the scope of this paper;
+time-variable stellar spectra are not killing to the extreme-precision
+\RV\ program!
+But they do require substantial and non-trivial adjustments to the
+\foreign{status quo}.
+We hope to address these in future work.
 
-Hogg: insert some grand final statement.
+
+...MOAR assumptions
+
+...limitations of our ``additional noise'' ideas and what we have considered.
+
+...Hogg: insert some grand final statement.
 
 \acknowledgements
 MPIA hospitality, Montet, Foreman-Mackey, Bean, Stuermer, Rix, \HARPS\ team, ESO, Stars group meeting, Brewer
