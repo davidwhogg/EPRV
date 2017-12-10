@@ -99,8 +99,6 @@ This means we are not considering the case of a real-time data reduction pipelin
 We also assume a \HARPS-like setup, i.e. no absorption cell, but the points we make can be easily generalized to the gas-cell case. 
 We return to this point in the discussion \todo{(do this)}.
 
-%wavelength calibration assumption removed b/c it fits better in Section 2... but maybe we want to add it back?
-
 We begin in Section \ref{s:info} with a derivation of the information-theory-based limit on the RV information content of a spectrum. 
 In Section \ref{s:methods}, we summarize common RV extraction practices used by current \RV\ pipelines, including cross-correlation and template fitting. 
 We then implement these techniques to extract \RV s using 5-\ang-wide sections of simulated and real spectra, as described in Section \ref{s:data}. 
@@ -295,7 +293,18 @@ A variety of choices exist for the cross-correlation template $f$. A few possibi
 \item data-driven template spectrum: some surveys (HIRES) use a single observation as a template. combining information from many visits is better because the combined SNR is amazing.
 \end{itemize}
 
-....discuss quadratic max procedure to get a fine-grained maximum from a coarse-grained cross-correlation grid
+One final implementation detail is the following:
+When we optimize the cross-correlation function, we don't run an optimizer;
+we perform brute-force search on a linear velocity grid.
+This grid, however, does not need to be fine.
+We use a coarse grid (\todo{give grid spacing here}), which does not
+over-resolve the velocity peak at the optimum.
+We then take the highest value on the grid and the values on either
+side, fit a parabola through those three values, and take as the optimal
+velocity the peak of that parabola.
+That is, we obtain sub-grid velocity resolution by means of a quadratic
+interpolation at the peak on the finite grid.
+\todo{Do we need to demonstrate this with a toy figure?}
 
 \begin{figure}
 \centering
