@@ -1,3 +1,9 @@
+% This file is part of the EPRV project.
+% Copyright 2017, 2018 the authors.
+
+% Style notes
+% - Re-define acronyms in each section? So less flippy flippy?
+
 \documentclass[modern]{aastex61}
 \usepackage{graphicx}
 \usepackage{xcolor}
@@ -433,6 +439,47 @@ But at current practices they may be limiting precision,
 and to ameliorate their effects will require substantial and non-trivial adjustments to the
 \foreign{status quo}.
 We hope to address these in future work.
+
+We also assumed that the noise is zero-mean, Gaussian, and with known
+variance tensor.
+There are certainly sources of noise that might violate these
+assumptions.
+There are two ways in which we might weaken our assumptions about
+the noise.
+The first is that the total noise acting on the system---and recall
+that noise for us is anything not accounted for in our model of the
+data---might not be Gaussian in form.
+This will happen if the photon counts (per pixel) get low.
+But it can also happen if there are unmodeled calibration artifacts
+that don't happen to have Gaussian-distributed amplitudes.
+This is not a problem in principle with computing or saturating the
+information-theory limit (\CRLB).
+The only significant change is that the simple Gaussian likelihood must
+be replaced with the appropriate function.
+That change modifies the \CRLB\ calculation, and it also modifies the
+relevant data-analysis method, since cross-correlation (justified in
+\sectionname~\ref{s:methods}) is only appropriate when the noise is
+close to Gaussian.
+In a non-Gaussian world, the \RV\ estimation must proceed by explicit
+optimization of the likelihood (or Bayesian methods derived therefrom).
+
+The second way in which we might weaken our assumptions about the
+noise is that there might be contributions to the noise (especially
+those coming from unmodeled calibration artifacts) with unknown
+variance.
+That is, it is an optimistic assumption that we know the variance of
+the noise, and all the covariances.
+Our only comment about this problem is that, at least, the assumption
+is testable:
+It is possible with big observing programs to look at the empirical
+properties of the residuals away from the best-fit model.
+Do the residuals appear to have zero mean and reasonable empirical
+variance, given the assumed variance?
+These tests are like chi-squared tests; they test the completeness
+of the model.
+If the model is incomplete, it can be fixed by adding new components
+to the model (calibration vectors of various kinds, for example) or
+inflating estimates of noise variance. Or both.
 
 ...MOAR assumptions
 
