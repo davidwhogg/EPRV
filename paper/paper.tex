@@ -189,14 +189,19 @@ The most optimistic assumptions we can possibly make are the following.
   flux sense. That is, the spectrum does not need to be perfectly
   continuum-normalized or perfectly flux-normalized, but it is
   calibrated near-perfectly \emph{consistently} across epochs (exposures).
+  We will break this assumption in our experiments, below.
 \item There are no residual telluric absorptions nor any residual sky
   emission in the spectra. That is, the sky is near-perfectly calibrated
   and removed.
-\item There is no time dependence (no epoch-to-epoch variations) in the
-  stellar spectrum.
+  We will also break this assumption in our experiments, below.
 \item The \emph{true} spectrum (that is, the latent spectrum that
   would be observed if the data were far, far better) of the star is
   known at better accuracy and precision than the main noise sources.
+  We will break this assumption too.
+  The whole point of this paper is to ask whether we can create a
+  good-enough proxy for the true spectrum.
+\item There is no time dependence (no epoch-to-epoch variations) in the
+  stellar spectrum.
 \item All noise sources contributing to the spectral data---which
   include at a minimum photon noise, read noise, residual telluric
   issues, residual wavelength-calibration issues, and residual stellar
@@ -480,10 +485,6 @@ of the model.
 If the model is incomplete, it can be fixed by adding new components
 to the model (calibration vectors of various kinds, for example) or
 inflating estimates of noise variance. Or both.
-
-...MOAR assumptions
-
-...limitations of our ``additional noise'' ideas and what we have considered.
 
 ...Hogg: insert some grand final statement.
 
