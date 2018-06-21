@@ -4,6 +4,9 @@ Copyright 2017,2018 David W Hogg (NYU) & Megan Bedell (Flatiron).
 """
 
 import numpy as np
+from scipy.interpolate import interp1d
+from scipy.optimize import minimize
+from tqdm import tqdm
 
 c = 299792458. # m/s
 np.random.seed(42)
@@ -82,13 +85,12 @@ def xcorr(data, model, ivars):
     mm = model - np.mean(model)
     return np.sum(dd * ivars * mm) / np.sqrt(np.sum(dd * ivars * dd) * np.sum(mm * ivars * mm))
 
-def get_objective_on_grid(data, ivars, template, args, method, guess, halfwidth):
+def get_objective_on_grid(data, ivars, template, args, guess, halfwidth):
     """
     `data`: `[M]` array of pixel values
     `ivars`: matched array of inverse variance values
     `args`: list of inputs to go into `template` function after `rv`
     `template`: function that makes the spectral template or mask
-    `method`: objective-function generator; currently `xcorr` or `chisq`
     `guess`: where (in wavelength) to center the grid
     `halfwidth`: half-width of the grid to make
     """
@@ -97,10 +99,10 @@ def get_objective_on_grid(data, ivars, template, args, method, guess, halfwidth)
     objs = np.zeros_like(rvs)
     for i, rv in enumerate(rvs):
         model = template(rv, *args)
-        objs[i] = method(data, model, ivars)
+        objs[i] = xcorr(data, model, ivars)
     return rvs, objs
 
-def quadratic_max(xs, ys):
+def quadratic_max(xs, ys, verbose = False):
     """
     Find the maximum from a list, using a quadratic interpolation.
     Note: REQUIRES (and `assert`s) that the xs grid is uniform.
@@ -109,13 +111,31 @@ def quadratic_max(xs, ys):
     assert np.allclose(xs[1:] - xs[:-1], delta), "quadratic_max: not uniform grid!"
     ii = np.nanargmax(ys)
     if ii == 0:
-        print("quadratic_max: warning: grid edge")
+        if verbose:
+            print("quadratic_max: warning: grid edge")
         return xs[ii]
     if (ii + 1) == len(ys):
-        print("quadratic_max: warning: grid edge")
+        if verbose:
+            print("quadratic_max: warning: grid edge")
         return xs[ii]
     return xs[ii] + 0.5 * delta * (ys[ii-1] - ys[ii+1]) / (ys[ii-1] - 2. * ys[ii] + ys[ii+1])
 
+def gaussian_resid(par, xs, ys):
+    (mm, sig, amp, offs) = par
+    yps = amp * oned_gaussian(xs, mm, sig) + offs
+    return np.sum(ys - yps)
+
+def gaussian_max(xs, ys, verbose = False):
+    """
+    Find the maximum from a list, using the central point of a Gaussian fit.
+    """
+    guess_par = (quadratic_max(xs, ys), 1.e3,
+                max(ys)-min(ys), min(ys)) # mean, sigma, amplitude, offset
+    soln = minimize(gaussian_resid, guess_par, args=(xs, ys))
+    if verbose:
+        print("gaussian_max: optimizer exited with message {0}".format(soln['message']))
+    return soln['x'][0]
+    
 def make_mask(rv, xs, ws, ms, w1, w2s):
     """
     `rv`: radial velocity in m/s (or same units as `c` above
@@ -145,31 +165,90 @@ def make_mask(rv, xs, ws, ms, w1, w2s):
         dmodel[xmms > dd] = 0.
         model += ww * dmodel
     return 1. - model
+    
+def load_mask(x_lo, x_hi, file='../code/G2.mas'):
+    mask_wis, mask_wfs, mask_ws = np.loadtxt(file, unpack=True, dtype=np.float64)
+    ind = (mask_wis >= x_lo) & (mask_wfs <= x_hi)  # keep only relevant lines
+    if len(ind) <= 1:
+        print("Not enough lines found in this wavelength region.")
+        return None
+    mask_wis, mask_wfs, mask_ws = mask_wis[ind], mask_wfs[ind], mask_ws[ind] # start, end, weight
+    mask_hws = (mask_wis - mask_wfs) / 2. # half-widths of lines
+    mask_ms =  (mask_wis + mask_wfs) / 2. # middle of lines
+    return (mask_ws, mask_ms, mask_hws)
 
-def binary_xcorr(guess_rvs, xs, data, ivars, dx, ms=None, harps_mask=True,
-                 mask_file='../code/G2.mas'):
+def solve_for_rvs(method, guess_rvs, xs, data, ivars, dx, mask_data=None, template_data=None, grid_hw=10024., max_method='quadratic', verbose=False):
     (N,M) = np.shape(data)
-    x_lo, x_hi = min(xs), max(xs)
-    if harps_mask:
-        # load HARPS mask
-        mask_wis, mask_wfs, harps_ws = np.loadtxt(mask_file,unpack=True,dtype=np.float64)
-        ind = (mask_wis >= x_lo) & (mask_wfs <= x_hi)  # keep only relevant lines
-        if len(ind) <= 1:
-            print "Not enough lines found in this wavelength region."
+    if method == 'binary_mask':
+        try:
+            (mask_ws, mask_ms, mask_hws) = mask_data
+        except:
+            print("Missing mask_data")
             return None
-        mask_wis, mask_wfs, harps_ws = mask_wis[ind], mask_wfs[ind], harps_ws[ind]
-        harps_hws = (mask_wis - mask_wfs) / 2.
-        harps_ms =  (mask_wis + mask_wfs) / 2.
-        #if logflux:
-        #    harps_ws = np.log(harps_ws)
-        args = (xs, harps_ws, harps_ms, 0.5 * dx, harps_hws)
-    else:
-        halfwidth = 0.06 # A; half-width of binary mask
-        hws = np.zeros_like(ms) + halfwidth
-        ws = np.ones_like(ms)
-        args = (xs, ws, ms, 0.5 * dx, hws)
+        args = (xs, mask_ws, mask_ms, 0.5 * dx, mask_hws)
+        func = make_mask
+    elif method == 'rigid_template':
+        try:
+            (template_xs, template_ys) = template_data
+        except:
+            print("Missing template_data")
+            return None
+        args = (xs, template_xs, template_ys)
+        func = shift_template
+    if max_method == 'quadratic':
+        max_func = quadratic_max
+    elif max_method == 'gaussian':
+        max_func = gaussian_max
     rvs_0 = np.zeros(N)
-    for n in range(N):
-        rvs, objs = get_objective_on_grid(data[n], ivars[n], make_mask, args, xcorr, guess_rvs[n], 1024.)
-        rvs_0[n] = quadratic_max(rvs, objs)
+    for n in tqdm(range(N)):
+        rvs, objs = get_objective_on_grid(data[n], ivars[n], func, args, guess_rvs[n], grid_hw)
+        rvs_0[n] = max_func(rvs, objs, verbose=verbose)
     return rvs_0
+    
+def make_template(all_data, rvs, xs, dx, plot=False, plotname='template.png'):
+    """
+    `all_data`: `[N, M]` array of pixels
+    `rvs`: `[N]` array of RVs
+    `xs`: `[M]` array of wavelength values
+    `dx`: linear spacing desired for template wavelength grid (A)
+    """
+    foo = 30. #magic
+    (N,M) = np.shape(all_data)
+    all_xs = np.empty_like(all_data)
+    for i in range(N):
+        all_xs[i,:] = xs * doppler(rvs[i]) # shift to rest frame
+    all_data, all_xs = np.ravel(all_data), np.ravel(all_xs)
+    tiny = 1.e-4
+    template_xs = np.arange(min(all_xs)-tiny, max(all_xs), dx)
+    template_ys = np.empty_like(template_xs)
+    for i,t in enumerate(template_xs):
+        ind = (all_xs >= t-dx/2.) & (all_xs < t+dx/2.)
+        template_ys[i] = np.sum(all_data[ind]) / np.sum(ind)
+    if plot == True:
+        plt.clf()
+        plt.scatter(all_xs, all_data, marker=".", alpha=0.25)
+        plt.plot(template_xs, template_ys, color='black', lw=2)
+        plt.title('Fitting a template to all data')
+        plt.savefig(plotname)
+    return template_xs, template_ys
+    
+def shift_template(rv, xs, template_xs, template_ys):
+    f = interp1d(template_xs / doppler(rv), template_ys, bounds_error = False, 
+            fill_value = 1.)
+    return f(xs)
+    
+def xcorr(data, model, ivars):
+    """
+    `data`: `[M]` array of pixels
+    `model`: `[M]` array of predicted pixels
+    `ivars`: `[M]` array of inverse variance values
+
+    Note: Presumes `ivars` is a list of diagonal entries; no
+      capacity for a dense inverse-variance matrix.
+    """
+    dd = data - np.mean(data)
+    mm = model - np.mean(model)
+    return np.sum(dd * ivars * mm) / np.sqrt(np.sum(dd * ivars * dd) * np.sum(mm * ivars * mm))
+    
+#def template_xcorr(guess_rvs, xs, data, ivars):
+    
