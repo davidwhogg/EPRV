@@ -7,6 +7,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 from scipy.optimize import minimize
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 c = 299792458. # m/s
 np.random.seed(42)
@@ -123,14 +124,15 @@ def quadratic_max(xs, ys, verbose = False):
 def gaussian_resid(par, xs, ys):
     (mm, sig, amp, offs) = par
     yps = amp * oned_gaussian(xs, mm, sig) + offs
-    return np.sum(ys - yps)
+    return np.sum((ys - yps)**2)
 
 def gaussian_max(xs, ys, verbose = False):
     """
     Find the maximum from a list, using the central point of a Gaussian fit.
     """
-    guess_par = (quadratic_max(xs, ys), 1.e3,
-                max(ys)-min(ys), min(ys)) # mean, sigma, amplitude, offset
+    guess_par = (quadratic_max(xs, ys), 5.e3,
+                (max(ys)-min(ys)) * 5.e3 * np.sqrt(2. * np.pi),
+                min(ys)) # mean, sigma, amplitude, offset
     soln = minimize(gaussian_resid, guess_par, args=(xs, ys))
     if verbose:
         print("gaussian_max: optimizer exited with message {0}".format(soln['message']))
@@ -249,6 +251,20 @@ def xcorr(data, model, ivars):
     dd = data - np.mean(data)
     mm = model - np.mean(model)
     return np.sum(dd * ivars * mm) / np.sqrt(np.sum(dd * ivars * dd) * np.sum(mm * ivars * mm))
+
+def plot_resids(rvs, true_rvs, crlb=0.0, title='', plotname='rv_mistakes.png'):
+    # plot RV residuals
+    plt.clf()
+    resid = rvs - true_rvs
+    plt.plot(true_rvs, resid - np.median(resid), "k.", alpha=0.5)
+    if crlb > 0.0:
+        plt.axhline(2. * crlb, color="k", lw=0.5, alpha=0.5)
+        plt.axhline(-2. * crlb, color="k", lw=0.5, alpha=0.5)
+    plt.title(title)
+    plt.xlabel("true RVs")
+    plt.ylabel("RV mistake - median")
+    plt.ylim(-500., 500.)
+    plt.savefig(plotname)
     
 #def template_xcorr(guess_rvs, xs, data, ivars):
     
