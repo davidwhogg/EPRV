@@ -261,9 +261,9 @@ def plot_resids(rvs, true_rvs, crlb=0.0, title='', plotname='rv_mistakes.png'):
         plt.axhline(2. * crlb, color="k", lw=0.5, alpha=0.5)
         plt.axhline(-2. * crlb, color="k", lw=0.5, alpha=0.5)
     plt.title(title)
-    plt.xlabel("true RVs")
-    plt.ylabel("RV mistake - median")
-    plt.ylim(-500., 500.)
+    plt.xlabel("true RVs", fontsize=14)
+    plt.ylabel("RV mistake - median", fontsize=14)
+    plt.ylim(-50., 50.)
     plt.savefig(plotname)
     
 #def template_xcorr(guess_rvs, xs, data, ivars):
