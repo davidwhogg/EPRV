@@ -69,8 +69,8 @@ delivering data capable of even higher precisions.
 The question arises: Is there any precision loss in current
 data-analysis methods?
 That is, what data-analysis methods deliver \RV\ measurements that
-saturate the information-theoretic bound on precision---the
-Cram\'er--Rao bound (\CRLB)---given an extracted spectrum (and
+saturate the information-theoretic 
+Cram\'er--Rao bound (\CRLB) on precision, given an extracted spectrum (and
 associated uncertainties) from a spectrograph?
 % methods
 We consider cross-correlation with a binary mask, a smoothed (or
@@ -93,7 +93,8 @@ is, a data-driven template will be correct enough to saturate the
 star does not vary substantially between epochs.
 As a side note, we find that tiny telluric features can affect \RV\ precision
 substantially, but that they can be modeled and removed by a data-driven
-method, provided that there is sufficient barycentric velocity variation.
+method, provided that there is sufficient barycentric velocity variation to
+separate the telluric and star rest frames.
 \end{abstract}
 
 \keywords{
@@ -138,8 +139,6 @@ We begin in Section \ref{s:info} with a derivation of the information-theory-bas
 In Section \ref{s:methods}, we summarize common RV extraction practices used by current \RV\ pipelines, including cross-correlation and template fitting. 
 We then implement these techniques to extract \RV s using 5-\ang-wide sections of simulated and real spectra, as described in Section \ref{s:data}. 
 We compare the relative performances of the methods in Section \ref{s:experiments} and conclude with some recommendations for future RV pipelines in Section \ref{s:summary}. 
-
-
 
 \section{Information Theory}
 \label{s:info}
