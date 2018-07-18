@@ -4,7 +4,7 @@
 % Style notes
 % - Re-define acronyms in each section? So less flippy flippy?
 
-\documentclass[modern]{aastex61}
+\documentclass[modern]{aastex62}
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage[sort&compress]{natbib}
@@ -36,14 +36,14 @@
 \newcommand{\CRLB}{\acronym{CRLB}}
 
 \setlength{\parindent}{1.4em} % trust in Hogg
-\shorttitle{achieving maximum radial-velocity precision}
+\shorttitle{data analysis for radial-velocity measurement}
 \shortauthors{bedell and hogg}
 
 \begin{document}\sloppy\sloppypar\raggedbottom\frenchspacing % trust in Hogg
 \graphicspath{ {figures/} }
 \DeclareGraphicsExtensions{.pdf,.eps,.png}
 
-\title{Achieving maximum possible precision on stellar radial-velocity measurements in multi-epoch spectroscopy}
+\title{\textbf{Data analysis for maximum-precision radial-velocity mesurement}}
 
 \author[0000-0001-9907-7742]{Megan Bedell}
 \affil{Center for Computational Astrophysics, Flatiron Institute, 162 Fifth Ave, New York, NY 10010, USA}
@@ -57,17 +57,43 @@
 
 \begin{abstract}\noindent
 % context
-Extremely precise stellar radial velocity (\RV) measurements are a foundational tool in the field of exoplanets, with hundreds of planets discovered by the Doppler method to date and about a dozen high-resolution spectrographs around the world dedicated to the search.
-Despite the importance of these observations, the detailed computational methods used to extract $\ms$-level \RV s from stellar spectra remain largely unstandardized and unpublished.
+Extremely precise stellar radial velocity (\RV) measurements are a
+foundational tool in the field of exoplanets, with hundreds of planets
+discovered by the Doppler method to date and many high-resolution
+spectrographs around the world dedicated to search and
+characterization.
+Current observations are delivering \RV\ measurements at $\ms$
+precision, while it is thought that some hardware systems ought to be
+delivering data capable of even higher precisions.
 % aims
-In this work, we look at sensible approaches to extracting \RV s from a data set of extracted spectra and compare their efficiencies by testing on a segment of realistic model spectrum, with the goal of identifying methods that have the possibility of saturating the information-theoretic Cram\'er--Rao bound (\CRLB) on measurement precision.
+The question arises: Is there any precision loss in current
+data-analysis methods?
+That is, what data-analysis methods deliver \RV\ measurements that
+saturate the information-theoretic bound on precision---the
+Cram\'er--Rao bound (\CRLB)---given an extracted spectrum (and
+associated uncertainties) from a spectrograph?
 % methods
-We consider cross-correlations (and, equivalently, maximum-likelihood optimizations) of the data with generalized (weighted) binary masks, synthetic spectra (from, say, stellar models), and data-driven templates constructed from the data themselves.
-We also consider the possibility that there are low-amplitude, unknown telluric absorptions (micro-tellurics) affecting the spectrum, and continuum-normalization problems, and measure improvements that flow from modeling those also in a data-driven way.
+We consider cross-correlation with a binary mask, a smoothed (or
+Gaussian-fit) cross-correlation with a binary mask, and
+cross-correlation with a stellar template.
+We consider both theoretically generated and data-driven templates,
+and look at some methods for data-driven telluric removal.
 % results
-We find that of all methods, only cross-correlation with an iteratively built data-driven template comes close to saturating the \CRLB.
-We find that if there are micro-tellurics, they can be captured by a data-driven model.
-We predict that simultaneously fitting data-driven models of the stellar spectrum and telluric contributions at all observational epochs will improve the \RV\ precision of \HARPS\ to substantially better than $1\,\ms$.
+As expected, we find that cross-correlation with a correct stellar
+template produces \RV\ measurements that saturate the \CRLB.
+We find that pure cross-correlation with a binary mask under-performs,
+but the standard practice of post-processing the binary-mask result
+with a Gaussian fit does saturate the \CRLB, when the binary mask is
+``correct'' in a certain sense.
+As the template or mask becomes incorrect, \RV\ precision suffers.
+Most importantly, we find that using the data themselves to generate
+the stellar template does not cost any significant information; that
+is, a data-driven template will be correct enough to saturate the
+\CRLB, provided that there are multiple epochs of observations and the
+star does not vary substantially between epochs.
+As a side note, we find that tiny telluric features can affect \RV\ precision
+substantially, but that they can be modeled and removed by a data-driven
+method, provided that there is sufficient barycentric velocity variation.
 \end{abstract}
 
 \keywords{
@@ -86,6 +112,7 @@ planets and satellites: detection
 
 \section{Introduction}
 
+\todo{needs reduction in scope, perhaps?}
 
 Accurate spectroscopic measurements of radial velocities (\RV s) have long been a critical tool across many subfields of astronomy, from Galactic dynamics to large-scale structure and cosmic expansion.
 Fundamentally, accuracy of radial-velocity mesurement is limited by the quality of spectral models of stars, or templates.
