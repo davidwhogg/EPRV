@@ -269,6 +269,7 @@ bound, based on assumptions similar to those of Bouchy but with the additional a
 each line is well approximated by a Gaussian (squared exponential) in shape.
 These literature bounds are all extremely similar, and similar to (\ref{eq:crlb});
 nothing here is controversial.
+We will come back to the scaling of uncertainty with various Gaussian line parameters in \sectionname~\ref{s:singleline}.
 
 Now that we have established the bound, how can we saturate it? That is,
 how can we make measurements (estimators)  with variances that come close to the \CRLB?
@@ -403,17 +404,17 @@ We began with the simplest test case possible: a single, strong absorption featu
 
 What is the CRLB?
 
-Discuss scaling of the CRLB with line FWHM, constrast/depth, etc. According to Lovis \& Fischer (2010) and Figueira (2017), $\sigma_{RV}$ should go as $\frac{\sqrt{FWHM}}{SNR \times C}$, where $C$ is the line contrast, or the depth of the line as a fraction of the continuum level \todo{(check on this definition of contrast)}. Do we see this?
+Discuss scaling of the CRLB with line FWHM, constrast/depth, etc. According to Lovis \& Fischer (2010) and Figueira (2017), $\sigma_{RV}$ should go as $\frac{\sqrt{FWHM}}{SNR \times C}$, where $C$ is the line contrast, or the depth of the line as a fraction of the continuum level. Do we see this?
 
 \subsection{Binary Mask}
 
-Our next test involved a more realistic test spectrum. We measured the centers and depths of \todo{N} lines in the Solar spectrum between {x - y} $\ang$ and used these measurements to generate a synthetic spectrum that closely resembles a typical observation of a Sun-like star.
+Our next test involved a more realistic test spectrum. Using \HARPS\ spectra of the solar twin star HIP 54287, we measured the centers and depths of 12 lines in a 4-$\ang$ window around 5000 $\ang$. We used these measurements to generate a synthetic spectrum that closely resembles a typical observation of a Sun-like star.
 
-What is the CRLB for this case? Binary mask cross-correlation is very far from saturating it. Cross-correlation or max-likelihood fitting with a perfect spectral template works much better. Talk a little bit about why.
+What is the CRLB for this case? How close can we come to saturating it when using (a) a typical HARPS-like mask and (b) an optimized mask? In all cases, binary mask cross-correlation is very far from saturating the CRLB. Talk a little bit about why.
 
 \subsection{Rigid Template}
 
-how well does the mask/template approximate the real data? try fudging the relative line depths and locations in both the binary mask and the template. do a correct template and an incorrect template.
+how well does the mask/template approximate the real data? try fudging the relative line depths and locations believably, like maybe you have a slightly wrong spectral type or metallicity in the template. do a correct template and an incorrect template.
 
 even a tiny wrongness to the template is visible in the RV variance.
 

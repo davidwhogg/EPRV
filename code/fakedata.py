@@ -369,7 +369,7 @@ if __name__ == "__main__":
         plotprefix = "realistic"
 
     # make fake data
-    N = 128
+    N = 64
     data, ivars, true_rvs = make_data(N, xs, ds, ms, sigs)
     
     # add tellurics
