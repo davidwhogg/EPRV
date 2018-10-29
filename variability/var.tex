@@ -1,0 +1,106 @@
+% var.tex : a paper about EPRV in the presence of spectral variability
+% This file is part of the EPRV project.
+% Copyright 2018 the authors.
+
+% Style notes
+% -----------
+% - Re-define acronyms in each section? So less flippy flippy?
+
+% To-do items
+% -----------
+% - figure out what experiments to do and do them?
+% - Draft it.
+% - Get a 6th keyword; re-consider keywords.
+
+\documentclass[modern]{aastex62}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[sort&compress]{natbib}
+\usepackage[hang,flushmargin]{footmisc}
+
+% units macros
+\newcommand{\unit}[1]{\mathrm{#1}}
+\newcommand{\km}{\unit{km}}
+\newcommand{\m}{\unit{m}}
+\newcommand{\s}{\unit{s}}
+\newcommand{\kms}{\km\,\s^{-1}}
+\newcommand{\ms}{\m\,\s^{-1}}
+\newcommand{\ang}{\text{\normalfont\AA}}
+
+% math macros
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\T}{^{\mathsf{T}}}
+
+% text macros
+\newcommand{\documentname}{\textsl{Article}}
+\newcommand{\sectionname}{Section}
+\newcommand{\todo}[1]{\textcolor{red}{#1}}  % gotta have \usepackage{xcolor} in main doc or this won't work
+\newcommand{\acronym}[1]{{\small{#1}}}
+\newcommand{\project}[1]{\textsl{#1}}
+\newcommand{\foreign}[1]{\textsl{#1}}
+\newcommand{\HARPS}{\project{\acronym{HARPS}}}
+\newcommand{\HIRES}{\project{\acronym{HIRES}}}
+\newcommand{\RV}{\acronym{RV}}
+\newcommand{\CRLB}{\acronym{CRLB}}
+
+\setlength{\parindent}{1.4em} % trust in Hogg
+\shorttitle{precise radial velocities for variable stars}
+\shortauthors{hogg and others}
+
+\begin{document}\sloppy\sloppypar\raggedbottom\frenchspacing % trust in Hogg
+\graphicspath{ {figures/} }
+\DeclareGraphicsExtensions{.pdf,.eps,.png}
+
+\title{\textbf{Precise radial-velocity measurements in the presence of stellar variability}}
+
+\author[0000-0003-2866-9403]{David W. Hogg}
+\affil{Center for Computational Astrophysics, Flatiron Institute, 162 Fifth Ave, New York, NY 10010, USA}
+\affil{Center for Cosmology and Particle Physics, Department of Physics, New York University, 726 Broadway, New York, NY 10003, USA}
+\affil{Center for Data Science, New York University, 60 Fifth Ave, New York, NY 10011, USA}
+\affil{Max-Planck-Institut f\"ur Astronomie, K\"onigstuhl 17, D-69117 Heidelberg}
+
+\begin{abstract}\noindent
+% context
+foo.
+% aims
+bar.
+% methods
+blah.
+% results
+duh.
+\end{abstract}
+
+\keywords{
+% atmospheric effects
+% ---
+binaries: spectroscopic
+---
+methods: data analysis
+---
+methods: statistical
+---
+techniques: radial velocities
+---
+planets and satellites: detection
+}
+
+\section{Introduction}
+
+Hello World!
+
+\acknowledgements
+It is a pleasure to thank
+  Ben Pope (Flatiron)
+and the participants in the weekly Stars Group Meeting at the Flatiron
+Institute for valuable contributions to this project.
+
+\todo{...add Hogg grant numbers}
+
+\todo{...add facilities tags}
+
+\todo{...add software tags}
+
+\bibliographystyle{apj}
+\bibliography{}%general,myref,inprep}
+
+\end{document}
