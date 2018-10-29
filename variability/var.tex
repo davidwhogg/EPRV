@@ -54,20 +54,45 @@
 \title{\textbf{Precise radial-velocity measurements in the presence of stellar variability}}
 
 \author[0000-0003-2866-9403]{David W. Hogg}
-\affil{Center for Computational Astrophysics, Flatiron Institute, 162 Fifth Ave, New York, NY 10010, USA}
+\affil{Flatiron Institute, 162 Fifth Ave, New York, NY 10010, USA}
 \affil{Center for Cosmology and Particle Physics, Department of Physics, New York University, 726 Broadway, New York, NY 10003, USA}
 \affil{Center for Data Science, New York University, 60 Fifth Ave, New York, NY 10011, USA}
 \affil{Max-Planck-Institut f\"ur Astronomie, K\"onigstuhl 17, D-69117 Heidelberg}
 
+\author{Others}
+
 \begin{abstract}\noindent
 % context
-foo.
+Spectrographs that deliver the very most precise radial-velocity (RV)
+measurements of stars---for the purpose of detecting exoplanets---are
+obtaining empirical root-variances of around $1\,\ms$.
+This is impressive, but not as precise as information theory
+permits.
+One possible source of variance is stellar variability, from stellar
+surface convection, sunspots, and activity.
+Spectral variability is undeniably present at some level for all
+convective-surface stars, and it undermines the fundamental
+assumptions of essentially all extreme-precision methodologies at
+present.
 % aims
-bar.
+Here we develop extreme-precision (EPRV) estimators that
+deliver RV precision without assuming that the stellar spectrum is
+constant in time.
+These methods are designed to work in pathological cases, where the
+variability is large, so that they will perform extremely well in more
+realistic situations in which the variability is small.
 % methods
-blah.
+They are probabilistic models, built on two important assumptions:
+The first is that the stellar variability is somehow compact, either
+in dimensionality or in total variance, or both.
+The second is that---in the limit of large data---the stellar
+variability is uncorrelated with the RV signals from any planets
+orbiting the star.
 % results
-duh.
+We find that, given sufficient data, our methods converge to saturating
+information-theoretic RV bounds, provided that the assumptions hold.
+This methodology opens up the possibility of reducing measurement variances,
+and widening the set of stars available for EPRV study.
 \end{abstract}
 
 \keywords{
@@ -84,13 +109,16 @@ techniques: radial velocities
 planets and satellites: detection
 }
 
+\section*{~}
+\clearpage
 \section{Introduction}
 
 Hello World!
 
 \acknowledgements
 It is a pleasure to thank
-  Ben Pope (Flatiron)
+  Megan Bedell (Flatiron),
+  Benjamin Pope (NYU),
 and the participants in the weekly Stars Group Meeting at the Flatiron
 Institute for valuable contributions to this project.
 
