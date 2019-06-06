@@ -64,38 +64,42 @@ discovered by the Doppler method to date and many high-resolution
 spectrographs around the world dedicated to search and
 characterization.
 Current observations are delivering \RV\ measurements at $\ms$
-precision, while it is thought that some hardware systems ought to be
-delivering data capable of even higher precisions.
+precision
+It appears that many hardware systems ought to be---on the basis of
+information-theoretic considerations---capable of delivering even
+higher precisions.
 % aims
-The question arises: Is there any precision loss in current
-data-analysis methods?
-That is, what data-analysis methods deliver \RV\ measurements that
-saturate the information-theoretic 
+Here we ask: What data-analysis methods deliver \RV\ measurements that
+saturate the
 Cram\'er--Rao bound (\CRLB) on precision, given an extracted spectrum (and
 associated uncertainties) from a spectrograph?
+We presume that the stellar spectrum does not vary with time (this is
+incorrect in detail).
 % methods
-We consider cross-correlation with a binary mask, a smoothed (or
-Gaussian-fit) cross-correlation with a binary mask, and
-cross-correlation with a stellar template.
-We consider both theoretically generated and data-driven templates,
-and look at some methods for data-driven telluric removal.
+We consider a smoothed (or
+Gaussian-fit) cross-correlation with a binary mask,
+cross-correlation with a stellar template,
+and maximum-likelihood methods.
+We draw out the relationships and equivalencies across these methods.
+We consider both theoretically generated and data-driven templates.
 % results
-As expected, we find that cross-correlation with a correct stellar
+We find (as expected) that cross-correlation with a correct stellar
 template produces \RV\ measurements that saturate the \CRLB.
-We find that pure cross-correlation with a binary mask under-performs,
-but the standard practice of post-processing the binary-mask result
-with a Gaussian fit does saturate the \CRLB, when the binary mask is
+We also find that 
+the standard practice of fitting a Gaussian to the cross-correlation
+with a binary mask saturates the \CRLB, so long as the binary mask is
 ``correct'' in a certain sense.
 As the template or mask becomes incorrect, \RV\ precision suffers.
+Un-corrected telluric absorption lines can also harm \RV\ precision.
 Most importantly, we find that using the data themselves to generate
-the stellar template does not cost any significant information; that
-is, a data-driven template will be correct enough to saturate the
-\CRLB, provided that there are multiple epochs of observations and the
-star does not vary substantially between epochs.
-As a side note, we find that tiny telluric features can affect \RV\ precision
-substantially, but that they can be modeled and removed by a data-driven
-method, provided that there is sufficient barycentric velocity variation to
-separate the telluric and star rest frames.
+the stellar and telluric templates does not cost any significant
+information.
+That is, data-driven stellar and telluric templates can be correct
+enough to saturate the \CRLB, provided that there are multiple epochs
+of observations and the star does not vary substantially between
+epochs.
+If the star does vary substantially, a lot more needs to be known
+before the relevant \CRLB\ even can be computed.
 \end{abstract}
 
 \keywords{
