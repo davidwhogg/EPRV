@@ -2,7 +2,17 @@
 % Copyright 2017, 2018, 2019 the authors.
 
 % Style notes
-% - Re-define acronyms in each section? So less flippy flippy?
+% -----------
+% - Re-define acronyms in each section? So less flippy flippy? Yes that's the thing.?
+% - 
+
+% To-do items
+% -----------
+% - search for all \todo
+% - search for all HOGG
+% - search for all BEDELL
+% - search for all CITE
+% - should we fun-cite some ancient papers in the first paragraph, like Hubble and Oort?
 
 \documentclass[modern]{aastex62}
 \usepackage{graphicx}
@@ -31,11 +41,11 @@
 \newcommand{\todo}[1]{\textcolor{red}{#1}}  % gotta have \usepackage{xcolor} in main doc or this won't work
 \newcommand{\acronym}[1]{{\small{#1}}}
 \newcommand{\project}[1]{\textsl{#1}}
-\newcommand{\foreign}[1]{\textsl{#1}}
 \newcommand{\HARPS}{\project{\acronym{HARPS}}}
 \newcommand{\HIRES}{\project{\acronym{HIRES}}}
 \newcommand{\RV}{\acronym{RV}}
 \newcommand{\CRLB}{\acronym{CRLB}}
+\newcommand{\foreign}[1]{\textsl{#1}}
 
 \setlength{\parindent}{1.4em} % trust in Hogg
 \shorttitle{data analysis for radial-velocity measurement}
@@ -119,20 +129,62 @@ planets and satellites: detection
 
 \section{Introduction}
 
-\todo{needs reduction in scope, perhaps?}
+It is ridiculous to open this \documentname\ by pointing out that
+the spectroscopic measurement of radial velocity (\RV) has been a
+critical tool across many subfields of astronomy, from Galactic
+dynamics to large-scale structure and cosmic expansion.
+Fundamentally, the accuracy of radial-velocity mesurement is limited
+by the quality of the spectral models of the targets of the
+spectroscopy.
+In recent decades, however, a new focus has emerged on \emph{extremely
+  precise} but \emph{purely relative} \RV\ measurements of stars as a
+means of detecting exoplanets and other kinds of companions.
+That is, we are looking for \emph{precision, not accuracy}.
+For this application, measuring the absolute velocity of the star is
+much less important than resolving changes through time.
+This is the problem we address in this \documentname.
 
-Accurate spectroscopic measurements of radial velocities (\RV s) have long been a critical tool across many subfields of astronomy, from Galactic dynamics to large-scale structure and cosmic expansion.
-Fundamentally, accuracy of radial-velocity mesurement is limited by the quality of spectral models of stars, or templates.
-In recent decades, however, a new focus has emerged on \emph{extremely precise} but purely \emph{relative} \RV\ measurements of stars as a means of detecting exoplanets and other kinds of companions.
-For this application, measuring the absolute velocity of the star is much less important than resolving changes through time.
-With sub-$\mps$-level precision required for the detection of Earth-like planets, vast amounts of effort have been poured into the engineering challenges of constructing a sufficiently stable spectrograph (or, failing that, being able to track the drift of a spectrograph over time) \todo{(cite some review papers)}. At the same time, great strides have been made towards disentangling true Doppler shifts from imitative signals like the spectral signatures of stellar pulsations and magnetic activity features \todo{(cite some review papers)}.  In this work, we investigate another fundamentally important but less commonly discussed aspect of the quest for maximum-precision \RV s: the method of analysis used to estimate the \RV\ given an extracted stellar spectrum.
+Earth-like planets induce $0.1\,\mps$-level signals in their host
+stars!
+Substantial hardware, software, and systems-engineering effort has
+been put into the challenges of making measurements at this level of
+precision (CITE some reviews).
+It appears that contemporary spectrographs are stable at the
+$0.05\,\mps$ level (CITE THINGS), and that the information content in
+the data---which is set by the spectral features, the spectrograph
+resolution, the wavelength range, and the observational
+signal-to-noise (CITE THINGS)---is sufficient.
+And yet, the best published \RV\ data sets show empirical scatter
+(rms variations around best-fit kinematic models, for example) at the
+$1\,\mps$ level (for example, CITE THINGS).
+One of the motivating questions for this work is: Is it possible that
+the data-analysis methodologies in use are contributing to this
+empirical variance?
+This is a question in information theory and inference.
 
-While the general idea of measuring a Doppler shift by the relative motions of stellar absorption lines is fairly straightforward, there are considerable subtleties to implementing this, from the choice of reference spectrum or template to the treatment of telluric absorption features. Ultra-stabilized spectrographs like \HARPS\ \todo{(define \& cite)} predominantly utilize a cross-correlation method with a custom-built list of spectral lines (see e.g. Queloz1995, Baranne1996). 
-A lesser-used alternative is cross-correlation or maximum-likelihood fitting using a template spectrum generated from the data (Buchhave, Anglada-Escude). 
-This often involves masking or downweighting of the most telluric-contaminated spectral regions.
+\todo{syntactical reference}
 
-On the other hand, gas-cell-calibrated spectrographs like \HIRES\ commonly adopt a more comprehensive forward-modeling approach. 
-In this framework, the instrumental line spread function, the stellar RV, and other parameters are optimized by modeling each observation as a combination of shifted and instrument-convolved template spectra for the star and gas cell. [say a bit more]
+While the general idea of measuring a Doppler shift by the relative
+motions of stellar absorption lines is fairly straightforward, there
+are considerable subtleties to implementing this, from the choice of
+reference spectrum or template to the treatment of telluric absorption
+features.
+Ultra-stabilized spectrographs like \HARPS\ \todo{(define \& cite)}
+predominantly utilize a cross-correlation method with a custom-built
+list of spectral lines (see e.g. Queloz1995, Baranne1996).
+A lesser-used alternative is cross-correlation or maximum-likelihood
+fitting using a template spectrum generated from the data (Buchhave,
+Anglada-Escude).
+This often involves masking or downweighting of the most
+telluric-contaminated spectral regions.
+
+On the other hand, gas-cell-calibrated spectrographs like
+\HIRES\ commonly adopt a more comprehensive forward-modeling approach.
+In this framework, the instrumental line spread function, the stellar
+RV, and other parameters are optimized by modeling each observation as
+a combination of shifted and instrument-convolved template spectra for
+the star and gas cell. [say a bit more]
+
 
 Our primary aim in this work is to establish a common frame of reference for these methods based on their relative ability to extract maximum-precision RVs and their robustness in the face of various expected structured noise sources.
 
