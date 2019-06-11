@@ -14,9 +14,11 @@
 \newcommand{\unit}[1]{\mathrm{#1}}
 \newcommand{\km}{\unit{km}}
 \newcommand{\m}{\unit{m}}
+\newcommand{\cm}{\unit{cm}}
 \newcommand{\s}{\unit{s}}
 \newcommand{\kms}{\km\,\s^{-1}}
-\newcommand{\ms}{\m\,\s^{-1}}
+\newcommand{\mps}{\m\,\s^{-1}}
+\newcommand{\cmps}{\cm\,\s^{-1}}
 \newcommand{\ang}{\text{\normalfont\AA}}
 
 % math macros
@@ -63,16 +65,15 @@ foundational tool in the field of exoplanets, with hundreds of planets
 discovered by the Doppler method to date and many high-resolution
 spectrographs around the world dedicated to search and
 characterization.
-Current observations are delivering \RV\ measurements at $\ms$
-precision
+Current observations are delivering \RV\ measurements at $\mps$
+precision.
 It appears that many hardware systems ought to be---on the basis of
-information-theoretic considerations---capable of delivering even
-higher precisions.
+both spectrograph-stability and information-theoretic
+considerations---capable of delivering even higher precisions.
 % aims
 Here we ask: What data-analysis methods deliver \RV\ measurements that
-saturate the
-Cram\'er--Rao bound (\CRLB) on precision, given an extracted spectrum (and
-associated uncertainties) from a spectrograph?
+saturate the Cram\'er--Rao bound (\CRLB) on precision, given an
+extracted spectrum (and associated uncertainties) from a spectrograph?
 We presume that the stellar spectrum does not vary with time (this is
 incorrect in detail).
 % methods
@@ -124,7 +125,7 @@ Accurate spectroscopic measurements of radial velocities (\RV s) have long been 
 Fundamentally, accuracy of radial-velocity mesurement is limited by the quality of spectral models of stars, or templates.
 In recent decades, however, a new focus has emerged on \emph{extremely precise} but purely \emph{relative} \RV\ measurements of stars as a means of detecting exoplanets and other kinds of companions.
 For this application, measuring the absolute velocity of the star is much less important than resolving changes through time.
-With sub-$\ms$-level precision required for the detection of Earth-like planets, vast amounts of effort have been poured into the engineering challenges of constructing a sufficiently stable spectrograph (or, failing that, being able to track the drift of a spectrograph over time) \todo{(cite some review papers)}. At the same time, great strides have been made towards disentangling true Doppler shifts from imitative signals like the spectral signatures of stellar pulsations and magnetic activity features \todo{(cite some review papers)}.  In this work, we investigate another fundamentally important but less commonly discussed aspect of the quest for maximum-precision \RV s: the method of analysis used to estimate the \RV\ given an extracted stellar spectrum.
+With sub-$\mps$-level precision required for the detection of Earth-like planets, vast amounts of effort have been poured into the engineering challenges of constructing a sufficiently stable spectrograph (or, failing that, being able to track the drift of a spectrograph over time) \todo{(cite some review papers)}. At the same time, great strides have been made towards disentangling true Doppler shifts from imitative signals like the spectral signatures of stellar pulsations and magnetic activity features \todo{(cite some review papers)}.  In this work, we investigate another fundamentally important but less commonly discussed aspect of the quest for maximum-precision \RV s: the method of analysis used to estimate the \RV\ given an extracted stellar spectrum.
 
 While the general idea of measuring a Doppler shift by the relative motions of stellar absorption lines is fairly straightforward, there are considerable subtleties to implementing this, from the choice of reference spectrum or template to the treatment of telluric absorption features. Ultra-stabilized spectrographs like \HARPS\ \todo{(define \& cite)} predominantly utilize a cross-correlation method with a custom-built list of spectral lines (see e.g. Queloz1995, Baranne1996). 
 A lesser-used alternative is cross-correlation or maximum-likelihood fitting using a template spectrum generated from the data (Buchhave, Anglada-Escude). 
