@@ -158,23 +158,35 @@ And yet, the best published \RV\ data sets show empirical scatter
 (rms variations around best-fit kinematic models, for example) at the
 $1\,\mps$ level (for example, CITE THINGS).
 We hear rumors of various projects delivering empirical scatters for
-the best stars at the $0.2$ to $0.5\,\mps$
-(J.~Brewer, private communication; F.~Pepe, private communication)
+the best stars at the $0.2$ to $0.5\,\mps$ level
+(J.~Brewer \& D.~Fischer, private communication; F.~Pepe, private communication)
 but they aren't yet published.
-One of the motivating questions for this work is: Is it possible that
+One of the motivating questions for this \documentname\ is: Is it possible that
 the data-analysis methodologies currently in use are contributing to this
 empirical variance?
 That is, are we getting the precision we should be, given the data
 quality?
 This is a question in information theory and inference.
 
-\todo{HOGG: syntactical reference}
-
 While the general idea of measuring a Doppler shift by the relative
 motions of stellar absorption lines is fairly straightforward, there
-are considerable subtleties to implementing this, from the choice of
-reference spectrum or template to the treatment of telluric absorption
+are considerable subtleties.
+These start at the design of the spectrograph hardware
+and include 
+the observing strategy, calibration methodology, spectral extraction
+choice of reference spectrum or template, and the treatment of telluric absorption
 features.
+Here we will focus on the last parts of this: We will presume that the
+spectrograph is delivering wavelength-calibrated, extracted, continuum-normalized
+spectra with minimal issues, and we will consider how to obtain the most
+precise possible \RV\ measurements from those good spectra.
+A more complete treatment would consider the hardware, observing strategy,
+calibration methodology, spectral extraction, and \RV\ measurement as
+an integrated system.
+That's an important direction for future research.
+
+\todo{HOGG: syntactical reference}
+
 Ultra-stabilized spectrographs like \HARPS\ \todo{(define \& cite)}
 predominantly utilize a cross-correlation method with a custom-built
 list of spectral lines (see e.g. Queloz1995, Baranne1996).
