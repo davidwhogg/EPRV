@@ -47,6 +47,8 @@
 \newcommand{\CRLB}{\acronym{CRLB}}
 \newcommand{\foreign}[1]{\textsl{#1}}
 
+\addtolength{\textheight}{0.8in}
+\addtolength{\topmargin}{-0.4in}
 \setlength{\parindent}{1.4em} % trust in Hogg
 \shorttitle{data analysis for radial-velocity measurement}
 \shortauthors{bedell and hogg}
@@ -70,10 +72,9 @@
 
 \begin{abstract}\noindent
 % context
-Extremely precise stellar radial velocity (\RV) measurements are a
-foundational tool in the field of exoplanets, with hundreds of planets
-discovered by the Doppler method to date and many high-resolution
-spectrographs around the world dedicated to search and
+Extremely precise stellar radial velocity (\RV) measurements
+have been used to to discover hundreds of exoplanets, and
+many new spectrographs are being built for exoplanet search and
 characterization.
 Current observations are delivering \RV\ measurements at $\mps$
 precision.
@@ -91,24 +92,23 @@ We consider a smoothed (or
 Gaussian-fit) cross-correlation with a binary mask,
 cross-correlation with a stellar template,
 and maximum-likelihood methods.
-We draw out the relationships and equivalencies across these methods.
+We draw out the relationships between these.
 We consider both theoretically generated and data-driven templates.
 % results
 We find (as expected) that cross-correlation with a correct stellar
 template produces \RV\ measurements that saturate the \CRLB.
 We also find that 
-the standard practice of fitting a Gaussian to the cross-correlation
+the currently standard practice of fitting a Gaussian to the cross-correlation
 with a binary mask saturates the \CRLB, so long as the binary mask is
-``correct'' in a certain sense.
+correct in a certain sense.
 As the template or mask becomes incorrect, \RV\ precision suffers.
 Un-corrected telluric absorption lines can also harm \RV\ precision.
 Most importantly, we find that using the data themselves to generate
 the stellar and telluric templates does not cost any significant
-information.
+information, once the number of observational epochs is large.
 That is, data-driven stellar and telluric templates can be correct
-enough to saturate the \CRLB, provided that there are multiple epochs
-of observations and the star does not vary substantially between
-epochs.
+enough to saturate the \CRLB, provided that
+the star does not vary substantially between epochs.
 If the star does vary substantially, a lot more needs to be known
 before the relevant \CRLB\ even can be computed.
 \end{abstract}
@@ -134,8 +134,8 @@ the spectroscopic measurement of radial velocity (\RV) has been a
 critical tool across many subfields of astronomy, from Galactic
 dynamics to large-scale structure and cosmic expansion.
 Fundamentally, the accuracy of radial-velocity mesurement is limited
-by the quality of the spectral models of the targets of the
-spectroscopy.
+jointly by the signal-to-noise of the spectroscopic data and
+the accuracy (in spectral space) of the spectral models.
 In recent decades, however, a new focus has emerged on \emph{extremely
   precise} but \emph{purely relative} \RV\ measurements of stars as a
 means of detecting exoplanets and other kinds of companions.
@@ -157,12 +157,18 @@ signal-to-noise (CITE THINGS)---is sufficient.
 And yet, the best published \RV\ data sets show empirical scatter
 (rms variations around best-fit kinematic models, for example) at the
 $1\,\mps$ level (for example, CITE THINGS).
+We hear rumors of various projects delivering empirical scatters for
+the best stars at the $0.2$ to $0.5\,\mps$
+(J.~Brewer, private communication; F.~Pepe, private communication)
+but they aren't yet published.
 One of the motivating questions for this work is: Is it possible that
-the data-analysis methodologies in use are contributing to this
+the data-analysis methodologies currently in use are contributing to this
 empirical variance?
+That is, are we getting the precision we should be, given the data
+quality?
 This is a question in information theory and inference.
 
-\todo{syntactical reference}
+\todo{HOGG: syntactical reference}
 
 While the general idea of measuring a Doppler shift by the relative
 motions of stellar absorption lines is fairly straightforward, there
