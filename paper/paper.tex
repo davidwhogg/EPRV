@@ -216,13 +216,16 @@ We are not onsidering the case of a real-time data reduction pipeline,
 because such a real-time pipeline does not, at the beginning of an
 observing campaign, have many epochs at hand.
 
-We begin in Section \ref{s:info} with a derivation of the information-theory-based limit on the RV information content of a spectrum. 
-In Section \ref{s:methods}, we summarize common RV extraction practices used by current \RV\ pipelines, including cross-correlation and template fitting. 
-We then implement these techniques to extract \RV s using 5-\ang-wide sections of simulated and real spectra, as described in Section \ref{s:data}. 
-We compare the relative performances of the methods in Section \ref{s:experiments} and conclude with some recommendations for future RV pipelines in Section \ref{s:summary}. 
+We begin in \sectionname~\ref{s:info} with a derivation of the information-theory-based limit on the RV information content of a spectrum. 
+In \sectionname~\ref{s:methods}, we summarize common RV extraction practices used by current \RV\ pipelines, including cross-correlation and template fitting. 
+We then implement these techniques to extract \RV s using 5-\ang-wide sections of simulated and real spectra.
+The simulated and real data are described in \sectionname~\ref{s:data}. 
+We compare the relative performances of the methods in \sectionname~\ref{s:experiments} and conclude with some recommendations for future RV pipelines in \sectionname~\ref{s:summary}. 
 
 \section{Information Theory}
 \label{s:info}
+
+\todo{HOGG: SYNTACTICAL REFERENCE}
 
 Given finite, noisy data, there is a limit coming from information
 theory on how well any parameter of interest can be measured.
@@ -452,7 +455,7 @@ The basic model that we use to generate fake spectra is extremely simple, assumi
 We simulated a 5-\ang\ region with random noise corresponding to an SNR of 100, a typical value for a single \RV\ spectrum. 
 Lines were inserted as Gaussians with prescribed centers, widths, and depths. 
 Every line was convolved with the same line spread function, which was taken to be a Gaussian with $\sigma$ = 0.05 \ang. 
-In the simplest test case, an arbitrary single line at 5000 \ang\ was used (see Section \ref{s:singleline}). 
+In the simplest test case, an arbitrary single line at 5000 \ang\ was used (see \sectionname~\ref{s:singleline}). 
 However, for most of our tests we injected a set of 12 lines with centers between 4998 - 5002 \ang. 
 The Gaussian parameters for these lines were based on fits to a reflected Solar spectrum from Vesta taken by \HARPS. \todo{(find citation/program number)} 
 The resulting spectrum strongly resembles a 5-\ang\ chunk taken from a typical \HARPS\ spectrum of a Sun-like star (Figure \ref{fig:spectra}).
