@@ -73,14 +73,12 @@
 \begin{abstract}\noindent
 % context
 Extremely precise stellar radial velocity (\RV) measurements
-have been used to to discover hundreds of exoplanets, and
+have been used to discover hundreds of exoplanets, and
 many new spectrographs are being built for exoplanet search and
 characterization.
-Current observations are delivering \RV\ measurements at $\mps$
-precision.
-It appears that many hardware systems ought to be---on the basis of
-both spectrograph-stability and information-theoretic
-considerations---capable of delivering even higher precisions.
+The best published results show empirical precision at the $\mps$ level.
+Information theory suggests that it ought to be possible ot reach
+higher precisions with current observations.
 % aims
 Here we ask: What data-analysis methods deliver \RV\ measurements that
 saturate the Cram\'er--Rao bound (\CRLB) on precision, given an
@@ -98,7 +96,7 @@ We consider both theoretically generated and data-driven templates.
 We find (as expected) that cross-correlation with a correct stellar
 template produces \RV\ measurements that saturate the \CRLB.
 We also find that 
-the currently standard practice of fitting a Gaussian to the cross-correlation
+the standard practice of fitting a Gaussian to the cross-correlation
 with a binary mask saturates the \CRLB, so long as the binary mask is
 correct in a certain sense.
 As the template or mask becomes incorrect, \RV\ precision suffers.
@@ -106,8 +104,8 @@ Un-corrected telluric absorption lines can also harm \RV\ precision.
 Most importantly, we find that using the data themselves to generate
 the stellar and telluric templates does not cost any significant
 information, once the number of observational epochs is large.
-That is, data-driven stellar and telluric templates can be correct
-enough to saturate the \CRLB, provided that
+That is, data-driven stellar and telluric templates can be used to
+saturate the \CRLB, provided that
 the star does not vary substantially between epochs.
 If the star does vary substantially, a lot more needs to be known
 before the relevant \CRLB\ even can be computed.
@@ -127,6 +125,7 @@ techniques:~radial~velocities
 planets~and~satellites:~detection
 }
 
+\clearpage
 \section{Introduction}
 
 It is ridiculous to open this \documentname\ by pointing out that
