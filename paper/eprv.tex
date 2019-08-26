@@ -389,9 +389,9 @@ but that they also can plausibly be mitigated with a data-driven model.
 \CRLB-saturating estimators are (or are equivalent to)
 maximum-likelihood estimators.
 When the likelihood is Gaussian, the log-likelihood
-is a sum of a quadratic chi-squared-like term and a determinant term
+is a sum of a quadratic chi-squared-like term and a log-determinant term
 \begin{equation}
-\ln L = -\frac{1}{2}\,[y - f(v)]\T\cdot C^{-1}\cdot [y - f(v)] - \frac{1}{2}\,||2\pi\,C|| \quad ,
+\ln L = -\frac{1}{2}\,[y - f(v)]\T\cdot C^{-1}\cdot [y - f(v)] - \frac{1}{2}\,\ln||2\pi\,C|| \quad ,
 \label{eq:lf}
 \end{equation}
 where $y$ is a column vector of the data, $f(v)$ is the model spectrum,
@@ -419,10 +419,10 @@ likelihood in equation~(\ref{eq:lf}), it becomes
 -\frac{1}{2}\,f(v)\T\cdot C^{-1}\cdot f(v) \quad.
 \end{equation}
 That is, the chi-squared term factors into a term that is the square
-of the model, a term that is the square of the data, and a term that
-is a cross-correlation.
-As long as the amplitude of $f$ doesn't depend on velocity, and the
-$C$ tensor is ``smooth'' in certain respects, the dependence of this
+of the data $y$, a term that is the square of the model $f(v)$,
+and a term that is a cross-correlation of data times model.
+As long as the amplitude of $f(v)$ doesn't depend strongly on velocity $v$,
+and the $C$ tensor is ``smooth'' in certain respects, the dependence of this
 chi-squared term on velocity will be dominated by the
 cross-correlation.
 For this reason, we can use a variant of cross-correlation
