@@ -344,8 +344,6 @@ operator with respect to velocity acting on the true spectrum), the
 derivatives are column vectors, and $C^{-1}$ is the inverse of the covariance matrix
 describing the true variance and covariances of the noise process.
 
-\todo{HOGG: SYNTACTICAL REFERENCE}
-
 Formulae (bounds) related to (\ref{eq:crlb}) have appeared previously
 in the literature, although in somewhat more complicated forms.
 Butler (\todo{cite}) shows a similar expression, but makes the additional
@@ -355,16 +353,18 @@ Bouchy (\todo{cite}) shows an expression that assumes that the pixels
 are independent and that the noise is dominated by a combination of photon
 and read noise. 
 That work also replaces the model spectrum with a set of optimal
-weights for cross-correlation, which amounts to very much the same thing.
+weights for cross-correlation, which amounts to very much the same thing,
+as we will discuss below.
 Figueira (\todo{cite}) and \todo{others (cite)} show a per-line
 bound, based on assumptions similar to those of Bouchy but with the additional assumption that
 each line is well approximated by a Gaussian (squared exponential) in shape.
 These literature bounds are all extremely similar, and similar to (\ref{eq:crlb});
 nothing here is controversial.
-We will come back to the scaling of uncertainty with various Gaussian line parameters in \sectionname~\ref{s:singleline}.
+We will come back to the scaling of uncertainty with various
+Gaussian line parameters in \sectionname~\ref{s:singleline}.
 
 Now that we have established the bound, how can we saturate it? That is,
-how can we make measurements (estimators)  with variances that come close to the \CRLB?
+how can we make measurements (estimators) with variances that come close to the \CRLB?
 The short answer is that reliable bound-saturating estimators are maximum-likelihood estimators.
 The long answer is long, but part of it is that the bound can only be saturated if the
 assumptions are correct, and note that the assumptions include that we know the
@@ -385,6 +385,8 @@ but that they also can plausibly be mitigated with a data-driven model.
 
 \section{Radial-velocity estimators}
 \label{s:methods}
+
+\todo{HOGG: SYNTACTICAL REFERENCE}
 
 Most methods for radial-velocity estimation involve some kind of
 cross-correlation of the data with a template.
