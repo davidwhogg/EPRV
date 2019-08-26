@@ -252,7 +252,7 @@ second derivative of the \emph{negative} log likelihood function:
 \begin{equation}
 \frac{1}{\sigma_v^2} \leq E\left[\frac{\dd^2}{\dd v^2}(-\ln L)\right] \quad,
 \end{equation}
-where $L$ is the likelihood, or the probability of the data given the velocity,
+where $L$ is the likelihood, or the probability of the data given the radial velocity $v$,
 and the expectation $E[\cdot]$ is taken over all possible data (that is, it is an
 expectation under the likelihood).
 This expectation value of a second derivative is the Fisher Information
@@ -270,13 +270,13 @@ can include them in the estimation and compute an inverse covariance matrix $C^{
 for the full parameter vector.
 This will then will have the bound
 \begin{equation}
-v^T\cdot C^{-1}\cdot v \leq v^T\cdot Q\cdot v
+u^T\cdot C^{-1}\cdot u \leq u^T\cdot Q\cdot u
 \end{equation}
 \begin{equation}
 Q_{ij} \equiv E\left[\frac{\dd^2}{\dd\theta_i\,\dd\theta_j}(-\ln L)\right] \quad,
 \end{equation}
 where $Q$ is the information tensor, $i,j$ are indices into that
-tensor, corresponding parameters are $\theta_i, \theta_j$, and $v$ is
+tensor, corresponding parameters are $\theta_i, \theta_j$, and $u$ is
 any arbitrary vector.
 That is, the bound is not just on every parameter, but really on on
 any combination of parameters.
@@ -338,9 +338,9 @@ Under these disturbingly unrealistic assumptions, the \CRLB\ becomes
 \begin{equation}\label{eq:crlb}
 \frac{1}{\sigma_v^2} \leq \left[\frac{\dd f}{\dd v}\right]\T\cdot C^{-1}\cdot\left[\frac{\dd f}{\dd v}\right]
 \end{equation}
-where the derivatives are of the true spectrum with respect to
-velocity (which can be thought of as the derivative of a Doppler
-operator with respect to velocity acting on the true spectrum), the
+where the derivatives are of the true spectrum $f$ with respect to
+velocity $v$ (which can, in turn, be thought of as the derivative of a Doppler
+operator with respect to velocity acting on the true spectrum; CITE WOBBLE), the
 derivatives are column vectors, and $C^{-1}$ is the inverse of the covariance matrix
 describing the true variance and covariances of the noise process.
 
