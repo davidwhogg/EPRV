@@ -133,7 +133,7 @@ It is ridiculous to open this \documentname\ by pointing out that
 the spectroscopic measurement of radial velocity (\RV) has been a
 critical tool across many subfields of astronomy, from Galactic
 dynamics to large-scale structure and cosmic expansion.
-Fundamentally, the accuracy of radial-velocity mesurement is limited
+Fundamentally, the accuracy of radial-velocity measurement is limited
 jointly by the signal-to-noise of the spectroscopic data and
 the accuracy (in spectral space) of the spectral models.
 In recent decades, however, a new focus has emerged on \emph{extremely
@@ -225,8 +225,6 @@ We compare the relative performances of the methods in \sectionname~\ref{s:exper
 \section{Information Theory}
 \label{s:info}
 
-\todo{HOGG: SYNTACTICAL REFERENCE}
-
 Given finite, noisy data, there is a limit coming from information
 theory on how well any parameter of interest can be measured.
 This limit is
@@ -242,16 +240,14 @@ to a model for the generation of the data.
 In particular, information-theory bounds require a model for the
 probability of the data given the parameter of interest; that is, they
 require a likelihood function.
-As an aside: Bayesians need a likelihood function for inference, and
+As an aside, it is worth noting that
+Bayesians need a likelihood function for inference, and
 frequentists need a likelihood function for analyzing their estimators.
 The likelihood function is therefore central to all statistical methods,
 and the core component of any data analysis.
 
-In particular, the \CRLB\ is related to the Fisher Information that is
-frequently used in cosmological experiment forecasts (\todo{CITE
-  SHIT}).
-It is that the \emph{inverse variance} $\sigma_v^{-2}$ of any velocity
-estimator (that is, the information in the velocity estimator) must be smaller than the
+For our purposes, the \CRLB\ is that the \emph{inverse variance} $\sigma_v^{-2}$ of any velocity
+estimator (that is, the information in the velocity estimator) must not be larger than the
 second derivative of the \emph{negative} log likelihood function:
 \begin{equation}
 \frac{1}{\sigma_v^2} \leq E\left[\frac{\dd^2}{\dd v^2}(-\ln L)\right] \quad,
@@ -259,10 +255,20 @@ second derivative of the \emph{negative} log likelihood function:
 where $L$ is the likelihood, or the probability of the data given the velocity,
 and the expectation $E[\cdot]$ is taken over all possible data (that is, it is an
 expectation under the likelihood).
-If there are many other nuisance parameters, a Bayesian can marginalize them
+This expectation value of a second derivative is the Fisher Information
+(information has units of inverse variance).
+This is the information-theory object that is frequently used in
+cosmological experiment forecasts (\todo{CITE SHIT}),
+and it is the quantity used for what we often call the ``formal error'' or
+``formal uncertainty'' on a least-square fit (\todo{CITE fitting a line}).
+The bound is an upper bound on the inverse variance, and thus a lower bound
+on the uncertainty.
+
+If there are many nuisance parameters, a Bayesian can marginalize them
 out to make $L$ the marginalized likelihood for the velocity, or a frequentist
 can include them in the estimation and compute an inverse covariance matrix $C^{-1}$
-for the full parameter vector, which will have the bound
+for the full parameter vector.
+This will then will have the bound
 \begin{equation}
 v^T\cdot C^{-1}\cdot v \leq v^T\cdot Q\cdot v
 \end{equation}
@@ -271,8 +277,9 @@ Q_{ij} \equiv E\left[\frac{\dd^2}{\dd\theta_i\,\dd\theta_j}(-\ln L)\right] \quad
 \end{equation}
 where $Q$ is the information tensor, $i,j$ are indices into that
 tensor, corresponding parameters are $\theta_i, \theta_j$, and $v$ is
-any arbitrary vector.  That is, the bound is not just on every
-parameter, but really on on any combination of parameters.
+any arbitrary vector.
+That is, the bound is not just on every parameter, but really on on
+any combination of parameters.
 
 In the case of extreme-precision \RV, this says that any computation of the limits
 on estimating stellar velocities (or stellar velocity changes)
@@ -336,6 +343,8 @@ velocity (which can be thought of as the derivative of a Doppler
 operator with respect to velocity acting on the true spectrum), the
 derivatives are column vectors, and $C^{-1}$ is the inverse of the covariance matrix
 describing the true variance and covariances of the noise process.
+
+\todo{HOGG: SYNTACTICAL REFERENCE}
 
 Formulae (bounds) related to (\ref{eq:crlb}) have appeared previously
 in the literature, although in somewhat more complicated forms.
