@@ -336,10 +336,10 @@ literature for maximum \RV\ precision (\todo{cite Butler, Bouchy,
 plus additional \emph{even more restrictive assumptions}.
 Under these disturbingly unrealistic assumptions, the \CRLB\ becomes
 \begin{equation}\label{eq:crlb}
-\frac{1}{\sigma_v^2} \leq \left[\frac{\dd f}{\dd v}\right]\T\cdot C^{-1}\cdot\left[\frac{\dd f}{\dd v}\right]
+\frac{1}{\sigma_v^2} \leq \left[\frac{\dd f(v)}{\dd v}\right]\T\cdot C^{-1}\cdot\left[\frac{\dd f(v)}{\dd v}\right]
 \end{equation}
-where the derivatives are of the true spectrum $f$ with respect to
-velocity $v$ (which can, in turn, be thought of as the derivative of a Doppler
+where the derivatives are of the true spectrum $f(v)$ with respect to
+radial velocity $v$ (which can, in turn, be thought of as the derivative of a Doppler
 operator with respect to velocity acting on the true spectrum; CITE WOBBLE), the
 derivatives are column vectors, and $C^{-1}$ is the inverse of the covariance matrix
 describing the true variance and covariances of the noise process.
@@ -386,31 +386,37 @@ but that they also can plausibly be mitigated with a data-driven model.
 \section{Radial-velocity estimators}
 \label{s:methods}
 
-\todo{HOGG: SYNTACTICAL REFERENCE}
+\CRLB-saturating estimators are (or are equivalent to)
+maximum-likelihood estimators.
+When the likelihood is Gaussian, the log-likelihood
+is a sum of a quadratic chi-squared-like term and a determinant term
+\begin{equation}
+\ln L = -\frac{1}{2}\,[y - f(v)]\T\cdot C^{-1}\cdot [y - f(v)] - \frac{1}{2}\,||2\pi\,C|| \quad ,
+\label{eq:lf}
+\end{equation}
+where $y$ is a column vector of the data, $f(v)$ is the model spectrum,
+which depends on the \RV\ $v$,
+and $C$ is the covariance matrix describing the noise variance.
+In the case of independent pixel noise the chi-squared term just becomes an
+inverse-variance weighted sum of squared residuals (chi-squared).
+The maximum-likelihood estimator for $v$ is the value of $v$ which maximizes
+the log-likelihood.
+Since only the chi-squared term depends on $v$, maximizing the likelihood
+means minimizing chi-squared.
 
-HOGG: OPEN by giving the LF and what it's optimum is, in the simplest case.
-Parameterize $f(v)$ where $v$ is the \RV.
-
-Most methods for radial-velocity estimation involve some kind of
+Most methods for radial-velocity estimation aren't explicitly maximizing
+any likelihood.
+Instead, they involve some kind of
 cross-correlation of the data with a template.
 This might be surprising, since (as we noted above) bound-saturating
 estimators will be maximum-likelihood estimators.
-However, under some simple assumptions, cross-correlation optima are
-also maximum-likelihood optima.
-
-For example, when the likelihood is Gaussian, the log-likelihood
-contains a chi-squared-like term
+However, under simple assumptions, cross-correlation optima are
+also maximum-likelihood optima. The argument is as follows:
+If we expand the quadratic form (chi-squared term) in the
+likelihood in equation~(\ref{eq:lf}), it becomes
 \begin{equation}
--\frac{1}{2}\,[y - f]\T\cdot C^{-1}\cdot [y - f] \quad ,
-\end{equation}
-where $y$ is a column vector of the data, $f$ is the model spectrum,
-and $C$ is the covariance matrix describing the noise variance.
-In the case of independent pixel noise this just becomes an
-inverse-variance weighted sum of squared residuals (chi-squared).
-If we expand this quadratic form, it becomes
-\begin{equation}
-{}-\frac{1}{2}\,y\T\cdot C^{-1}\cdot y + y^T\cdot C^{-1}\cdot f 
--\frac{1}{2}\,f\T\cdot C^{-1}\cdot f \quad.
+{}-\frac{1}{2}\,y\T\cdot C^{-1}\cdot y + y^T\cdot C^{-1}\cdot f(v) 
+-\frac{1}{2}\,f(v)\T\cdot C^{-1}\cdot f(v) \quad.
 \end{equation}
 That is, the chi-squared term factors into a term that is the square
 of the model, a term that is the square of the data, and a term that
@@ -419,8 +425,10 @@ As long as the amplitude of $f$ doesn't depend on velocity, and the
 $C$ tensor is ``smooth'' in certain respects, the dependence of this
 chi-squared term on velocity will be dominated by the
 cross-correlation.
-For this reason, we will use a variant of cross-correlation
-optimization as our radial-velocity estimator.
+For this reason, we can use a variant of cross-correlation
+optimization as a radial-velocity estimator.
+
+\todo{HOGG: SYNTACTICAL REFERENCE}
 
 ...In detail, the cross-correlation we will optimize is...
 
