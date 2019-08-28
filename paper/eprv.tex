@@ -415,22 +415,81 @@ also maximum-likelihood optima. The argument is as follows:
 If we expand the quadratic form (chi-squared term) in the
 likelihood in equation~(\ref{eq:lf}), it becomes
 \begin{equation}
-{}-\frac{1}{2}\,y\T\cdot C^{-1}\cdot y + y^T\cdot C^{-1}\cdot f(v) 
+ {}-\frac{1}{2}\,y\T\cdot C^{-1}\cdot y
+               + y\T\cdot C^{-1}\cdot f(v)
 -\frac{1}{2}\,f(v)\T\cdot C^{-1}\cdot f(v) \quad.
 \end{equation}
 That is, the chi-squared term factors into a term that is the square
 of the data $y$, a term that is the square of the model $f(v)$,
-and a term that is a cross-correlation of data times model.
+and a term that is a scalar product or projection or
+cross correlation of data with model.
 As long as the amplitude of $f(v)$ doesn't depend strongly on velocity $v$,
 and the $C$ tensor is ``smooth'' in certain respects, the dependence of this
 chi-squared term on velocity will be dominated by the
 cross-correlation.
 For this reason, we can use a variant of cross-correlation
-optimization as a radial-velocity estimator.
+optimization as a radial-velocity estimator, or, in other words, the
+\RV\ $v$ that optimizes $y\T\cdot C^{-1}\cdot f(v)$ will also (nearly)
+optimize the likelihood.
+
+In actually performing this cross-correlation optimization,
+investigators make some non-trivial choices.
+The first is whether or not to use the inverse variance tensor $C$.
+Many codes do not make any use of the uncertainty estimates at all in
+the calculation of the cross correlation.
+Not using the uncertainties (treating $C$ as the identity) is
+equivalent to assuming that the pixel uncertainties don't vary much
+from pixel to pixel across the spectrum.
+If the cross correlation is optimized with $C$ set to the identity,
+the optimum of that doesn't strictly optimize the likelihood function;
+the differences depdends on the variations in the uncertainties.
+Another choice is how finely to sample in radial velocity $v$, or how
+to perform the optimization.
+If the $v$ spacing is coarse (but not too coarse!), quadratic
+interpolation can be used to find the optimum at high precision.
+The velocity spacing need only be smaller than something like half the
+spectral velocity resolution ($c\,\Delta\lambda / \lambda$).
+This problem is similar to stellar centroiding methods in use in
+imaging surveys (CITE VAKILI).
+Another choice faced by an investigator is what to do at the ends or
+edges of the spectra or spectral segments used for the
+cross-correlation.
+If the edges are treated naively, it is possible to introduce unintended
+dependencies that invalidate the requirement that the model-times-model term
+(the $f(v)\T\cdot C^{-1}\cdot f(v)$ term) not depend on \RV\ $v$.
+
+HOGG ...In detail, in the experiments that follow, the
+cross-correlation we will optimize has the following properties...
+
+The maximum-likelihood and cross-correlation methods only give
+bound-saturating \RV\ estimates when the spectral model $f(v)$
+respresents something similar to the true expecation of the spectrum
+at velocity $v$.
+And yet there is a paradox, because many world-class \RV\ pipelines
+(like for instance HOGG CITE) perform cross-correlation with a
+\emph{binary mask}.
+This is not a good representation of the spectral expectation! So why
+do these methods work to deliver high quality \RV\ estimates.
+The answer is that the codes that cross-correlate with a binary mask
+subsequently fit that cross-correlation with a Gaussian function.
+It turns out that the operation ``cross-correlate the data with a
+binary mask, followed by fitting a Gaussian to the cross-correlation
+function'' is mathematically equivalent to ``smooth the binary mask
+with a Gaussian, and then cross-correlate with the data''.
+That is, when a pipeline cross-correlates with a binary mask and then
+fits that cross-correlation function with a Gaussian, it is equivalent
+to smoothing the binary mask with a best-fitting Gaussian function to
+make a smooth, realistic $f(v)$ and then cross-correlating with that
+realistic $f(v)$.
+The fitting gives the flexibility to match the spectral resolution of
+the template to the spectral resolution of the data, in the
+approximation that the resolution is close to constant over the
+spectral range in velocity units.
+So in all cases of bound-saturating \RV\ measurements, the
+\RV\ estimation is effectively a good approximation to
+maximum-likelihood with a good spectral template.
 
 \todo{HOGG: SYNTACTICAL REFERENCE}
-
-...In detail, the cross-correlation we will optimize is...
 
 A variety of choices exist for the cross-correlation template $f$. A few possibilities include:
 \begin{itemize}
