@@ -446,18 +446,10 @@ optimization as a radial-velocity estimator, or, in other words, the
 \RV\ $v$ that optimizes $f(v)\T\cdot C^{-1}\cdot y$ will also (nearly)
 optimize the likelihood.
 
-Another argument is as follows:
-As long as the derivative $\dd f(v)/\dd v$ is close to orthogonal
-(given the $C^{-1}$ metric) to the template $f(v)$, the derivative of
-the log likelihood given in equation~(\ref{eq:dldv}) is equal to the
-derivative of the cross-correlation $f(v)\T\cdot C^{-1}\cdot y$.
-Therefore, whatever optimizes the likelihood will (nearly) optimize
-the cross-correlation.
-
 In actually performing this cross-correlation optimization,
 investigators make some non-trivial choices.
-The first is whether or not to use the inverse variance tensor $C$.
-Many codes do not make any use of the uncertainty estimates at all in
+The first is whether or not to use the inverse variance tensor $C^{-1}$.
+Many codes do not make any use of uncertainty estimates at all in
 the calculation of the cross correlation.
 Not using the uncertainties (treating $C$ as the identity) is
 equivalent to assuming that the pixel uncertainties don't vary much
@@ -489,7 +481,7 @@ bound-saturating \RV\ estimates when the spectral model $f(v)$
 respresents something similar to the true expecation of the spectrum
 at velocity $v$.
 And yet there is a paradox, because many world-class \RV\ pipelines
-(like for instance \\CITE) perform cross-correlation with a
+(like for instance \CITE) perform cross-correlation with a
 \emph{binary mask}.
 This is not a good representation of the spectral expectation! So why
 do these methods deliver high quality \RV\ estimates?
