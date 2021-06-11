@@ -14,7 +14,7 @@
 % - search for all CITE
 % - should we fun-cite some ancient papers in the first paragraph, like Hubble and Oort?
 
-\documentclass[modern]{aastex62}
+\documentclass[modern]{aastex63}
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage[sort&compress]{natbib}
@@ -253,13 +253,14 @@ second derivative of the \emph{negative} log likelihood function:
 \begin{equation}
 \frac{1}{\sigma_v^2} \leq E\left[\frac{\dd^2}{\dd v^2}(-\ln L)\right] \quad,
 \end{equation}
+\todo{HOGG CHECK THIS (factor of 2?)}
 where $L$ is the likelihood, or the probability of the data given the radial velocity $v$,
 and the expectation $E[\cdot]$ is taken over all possible data (that is, it is an
 expectation under the likelihood).
 This expectation value of a second derivative is the Fisher Information
-(information has units of inverse variance).
+(information, for us, has units of inverse variance).
 This is the information-theory object that is frequently used in
-cosmological experiment forecasts (\todo{CITE SHIT}),
+cosmological experiment forecasts (\todo{CITE}),
 and it is the quantity used for what we often call the ``formal error'' or
 ``formal uncertainty'' on a least-square fit (\todo{CITE fitting a line}).
 The bound is an upper bound on the inverse variance, and thus a lower bound
@@ -331,11 +332,7 @@ The most optimistic assumptions we can possibly make are the following.
   is known, as is the covariance between nearby pixels, and in the
   same \emph{true} sense that the true spectrum of the star is known.
 \end{itemize}
-It is worthy of note that every formula (that we know) in the
-literature for maximum \RV\ precision (\todo{cite Butler, Bouchy,
-  Figueira, Lovis}) makes all of these same assumptions,
-plus additional \emph{even more restrictive assumptions}.
-Under these disturbingly unrealistic assumptions, the \CRLB\ becomes
+Under these unrealistic assumptions, the \CRLB\ becomes
 \begin{equation}\label{eq:crlb}
 \frac{1}{\sigma_v^2} \leq \left[\frac{\dd f(v)}{\dd v}\right]\T\cdot C^{-1}\cdot\left[\frac{\dd f(v)}{\dd v}\right]
 \end{equation}
@@ -345,8 +342,10 @@ operator with respect to velocity acting on the true spectrum; \CITE WOBBLE), th
 derivatives are column vectors, and $C^{-1}$ is the inverse of the covariance matrix
 describing the true variance and covariances of the noise process.
 
-Formulae (bounds) related to (\ref{eq:crlb}) have appeared previously
-in the literature, although in somewhat more complicated forms.
+It is worthy of note that every formula (that we know) in the
+literature, comparable to (\ref{eq:crlb}), for maximum \RV\ precision (\todo{cite Butler, Bouchy,
+  Figueira, Lovis}) makes all of these same assumptions,
+plus additional \emph{even more restrictive assumptions}.
 Butler (\todo{cite}) shows a similar expression, but makes the additional
 assumption that every pixel is independent; that is, that there is no
 covariance between nearby pixels from, say, extraction or continuum normalization.
