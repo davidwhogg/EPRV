@@ -2,6 +2,7 @@
 *.log
 *.blg
 *.bbl
+*.out
 *~
 eprv.pdf
 *Notes.bib
